@@ -8,6 +8,7 @@
 #endif //PARALLEL_A_STAR_LIST_H
 
 #include "node.c"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>

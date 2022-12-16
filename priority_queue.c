@@ -2,8 +2,8 @@
 // Created by Jacopo Clocchiatti on 01/12/22.
 //
 
-// TODO: implement hash into functions + finish update priority +
-#include "priority_queue.h"
+// TODO: implement hash into functions + finish update priority
+#include "hash_table.c"
 
 typedef struct MinHeap MinHeap;
 

@@ -11,11 +11,9 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-#include <mpich.h>
+#include <mpi.h>
 #include <opm.h>
 
 #include "priority_queue.c"
-#include "list.c"
-#include "node.c"
 #include "compute_distance.c"
 #include "utility.c"

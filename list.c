@@ -2,7 +2,7 @@
 // Created by Jacopo Clocchiatti on 07/12/22.
 //
 
-#include "list.h"
+#include "data_struct_helper.h"
 
 typedef struct List List;
 
@@ -40,7 +40,7 @@ void print_list(List* list){
 
 // todo: better find alg
 // list is not ordered, linear scan might be best case
-bool find(Node* list, int list_len,  Node* node){
+bool find_in_list(Node* list, int list_len,  Node* node){
     for (int i = 0; i < list_len; i++){
         if (list[i].value == node->value){
             return true;

@@ -2,7 +2,7 @@
 // Created by Jacopo Clocchiatti on 08/12/22.
 //
 
-#include "hash_table.h"
+#include "list.c"
 
 typedef struct HashElement HashElement;
 typedef struct HashBucket HashBucket;
