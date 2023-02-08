@@ -5,6 +5,13 @@
 #include "../include/generic_list.h"
 #include "../include/compute_distance.h"
 
+#define GREY  "\x1B[38;5;236m"
+#define RED   "\x1B[38;5;160m"
+#define GREEN "\x1B[38;5;40m"
+#define WHITE "\x1B[38;5;15m"
+#define BLUE  "\x1B[1;5;36m"
+#define RESET "\x1B[0m"
+
 LinkedNode* add_neighbour(LinkedNode* curr, Node* neighbour) {
     LinkedNode* linked_neighbour = malloc(sizeof(LinkedNode));
     linked_neighbour->node = neighbour;
@@ -13,17 +20,48 @@ LinkedNode* add_neighbour(LinkedNode* curr, Node* neighbour) {
     return linked_neighbour;
 }
 
-LinkedNode* get_neighbours(List* arches_list, Node current) {
-    return ((LinkedNode *) arches_list->arr[current.id])->next;
+LinkedNode* get_neighbours(List* arches_list, Node *current) {
+    return ((LinkedNode *) arches_list->arr[current->id])->next;
+}
+
+void printf_with_colors(Node c) {
+    if (c.type == cell)
+        printf(GREY "+" RESET, (int) c.distance);
+    else if (c.type == start)
+        printf(GREEN "S" RESET);
+    else if (c.type == end)
+        printf(RED "E" RESET);
+    else if (c.type == obstacle)
+        printf(WHITE "-" RESET, (int) c.distance);
+    else if (c.type == visited)
+        printf(BLUE "+" RESET, (int) c.distance);
+}
+
+void print_context(Node* nodes, List* visited_nodes) {
+    for (int i = 0; i < visited_nodes->used; i++) {
+        Node visited_node = *(Node*) visited_nodes->arr[i];
+        Node* context_node = &nodes[visited_node.id];
+        if (context_node->type == start) continue;
+        // printf("%f\n", context_node->distance);
+        context_node->type = visited;
+    }
+    for (int i = 0; i < MAX_HEIGHT; i++) {
+        for (int j = 0; j < MAX_WIDTH; j++) {
+            printf_with_colors(nodes[(MAX_HEIGHT*i)+j]);
+        }
+        printf("\n");
+    }
 }
 
 int main() {
+    setbuf(stdout, NULL);
+
     char input_matrix[MAX_HEIGHT][MAX_WIDTH];
     generate_input(input_matrix);
 
     // select start and end nodes
-    Node starting_node;
-    Node destination_node;
+    Node* starting_node;
+    Node* destination_node;
     Node* nodes = malloc(MAX_HEIGHT * MAX_WIDTH * sizeof (Node));
     for (int i = 0; i < MAX_HEIGHT; i++) {
         for (int j = 0; j < MAX_WIDTH; j++) {
@@ -39,11 +77,11 @@ int main() {
                 nodes[id].type = obstacle;
             else if (curr == 'S') {
                 nodes[id].type = start;
-                starting_node = nodes[id];
+                starting_node = &nodes[id];
             }
             else if (curr == 'E') {
                 nodes[id].type = end;
-                destination_node = nodes[id];
+                destination_node = &nodes[id];
             }
             else if (curr == '+')
                 nodes[id].type = cell;
@@ -83,79 +121,64 @@ int main() {
         }
     }
 
-    setbuf(stdout, NULL);
-
-    for (int i = 0; i < arches_list->used; i++) {
-        LinkedNode* curr = (LinkedNode*) arches_list->arr[i];
-        printf("\n%d: ", curr->node->id);
-        curr = curr->next;
-        while (curr != NULL) {
-            printf("%d ", curr->node->id);
-            LinkedNode* to_free = curr;
-            curr = curr->next;
-            free(to_free);
-        }
-    }
-    free_list(arches_list);
-
-    // todo: read input graph -> read_data.c
-    // read graph
-    // Node* graph;
-
     // initialize list for node seen and to see
-    MinHeap* open_list = init_minheap(0);
+    MinHeap* open_list = init_minheap();
     List* close_list = init_list();
 
     // initialize starting node
-    starting_node.normal_distance = 0;
-    starting_node.heuristic_distance = compute_heuristic(starting_node, destination_node);
-    starting_node.distance = starting_node.normal_distance;
+    starting_node->normal_distance = 0;
+    starting_node->heuristic_distance = compute_heuristic(*starting_node, *destination_node);
+    starting_node->distance = starting_node->heuristic_distance;
     open_list = insert_into_heap(open_list, starting_node);
 
+    bool completed = false;
+    bool is_a_star_done = !is_queue_empty(open_list) && !completed;
+    while (is_a_star_done) {
+        Node* curr_node = pop_min(open_list);
 
-    while (!is_queue_empty(open_list)) {
-        // get first element in queue
-        Node current_node = pop_min(open_list);
-
-        if (current_node.id == destination_node.id){
-            // print_list(close_list); TODO
-            printf("Done?");
-            return 0;
+        if (curr_node->id == destination_node->id) {
+            print_context(nodes, close_list);
+            free_list(arches_list);
+            free_list(close_list);
+            free_minheap(open_list);
+            completed = true;
+            continue;
         }
+        insert_into_list(close_list, curr_node);
 
         // get neighbouring nodes
-        LinkedNode* linked_neighbour = get_neighbours(arches_list, current_node);
+        LinkedNode* linked_neighbour = get_neighbours(arches_list, curr_node);
         List* neighbours = init_list();
-        while(linked_neighbour != NULL) {
+        int n_neighbours = 0;
+        while (linked_neighbour != NULL) {
             insert_into_list(neighbours, linked_neighbour->node);
             linked_neighbour = linked_neighbour->next;
+            n_neighbours++;
         }
 
-        close_list = insert_into_list(close_list, &current_node);
-
-        int i = 0;
         // check neighbours
         // if already checked, skip it
         // if never seen, add to priority queue
         // else check if distance is shorter than previous one
-        while(i < close_list->used) {
-            if (find((Node**) close_list->arr, close_list->used, neighbours->arr[i])) {
+        for (int i = 0; i < n_neighbours; i++) {
+            Node* curr_neighbour = neighbours->arr[i];
+            if (curr_neighbour->type == obstacle) continue;
+            bool is_node_already_visited = find_in_list(close_list, curr_neighbour);
+            if (is_node_already_visited) {
                 continue;
-            } else if (!find(open_list->arr, open_list->size, neighbours->arr[i])) {
-                insert_into_heap(open_list, *(Node*) neighbours->arr[i]);
-            } else {
-                Node* inserted_node = get_node(open_list, neighbours->arr[i]);
-
-                double normal_distance = compute_heuristic(*(Node*) neighbours->arr[i], destination_node);
-
-                if (normal_distance < inserted_node->normal_distance){
-                    inserted_node->normal_distance = normal_distance;
-                    inserted_node->distance = inserted_node->heuristic_distance + normal_distance;
-                    // open_list = update_priority(open_list, inserted_node);
-                }
             }
-            i++;
+
+            curr_neighbour->heuristic_distance = compute_heuristic(*curr_neighbour, *destination_node);
+            curr_neighbour->normal_distance = curr_node->normal_distance + 0;
+            curr_neighbour->distance = curr_neighbour->heuristic_distance + curr_neighbour->normal_distance;
+
+            bool is_node_already_open = find_in_heap(open_list, curr_neighbour);
+            if (is_node_already_open)
+                continue;
+
+            insert_into_heap(open_list, curr_neighbour);
         }
+        print_context(nodes, close_list);
     }
     return -1;
 }

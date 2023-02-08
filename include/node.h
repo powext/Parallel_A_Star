@@ -6,7 +6,7 @@
 #define NODE_H
 typedef struct Node Node;
 
-typedef enum {start, end, cell, obstacle} NodeType;
+typedef enum {start, end, cell, obstacle, visited} NodeType;
 
 struct Node{
     int id;

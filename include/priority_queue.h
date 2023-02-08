@@ -16,16 +16,18 @@ typedef struct MinHeap MinHeap;
 
 struct MinHeap{
     Node** arr;
-    int size;
+    int used;
     int capacity;
     HashTable positions;
 };
 
-MinHeap* init_minheap(int capacity);
+MinHeap* init_minheap();
 bool is_queue_empty(MinHeap* heap);
-MinHeap* insert_into_heap(MinHeap* heap, Node node);
-Node pop_min(MinHeap* heap);
+MinHeap* insert_into_heap(MinHeap* heap, Node* node);
+Node* pop_min(MinHeap* heap);
 Node* get_node(MinHeap* heap, Node* node);
+bool find_in_heap(MinHeap* list, Node* node);
+void free_minheap(MinHeap* heap);
 
 
 #endif //PARALLEL_A_STAR_PRIORITY_QUEUE_H

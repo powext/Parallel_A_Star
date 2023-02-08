@@ -22,7 +22,8 @@ typedef struct LinkedNode {
 } LinkedNode;
 
 List* init_list();
-List* insert_into_list(List* list, void* node);
+void insert_into_list(List* list, void* node);
 void free_list(List* list);
+bool find_in_list(List* list, Node* node);
 
 #endif //PARALLEL_A_STAR_LIST_H

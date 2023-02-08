@@ -10,6 +10,6 @@
 
 double compute_total_distance();
 double compute_heuristic(Node a, Node b);
-bool find(Node** list, int list_len,  Node* node);
+
 
 #endif //PARALLEL_A_STAR_COMPUTE_DISTANCE_H

@@ -46,7 +46,7 @@
 *.mod*
 *.cmd
 .tmp_versions/
-cmake-build-debug/
+cmake-build-*/
 modules.order
 Module.symvers
 Mkfile.old

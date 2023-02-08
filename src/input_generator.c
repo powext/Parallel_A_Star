@@ -75,10 +75,8 @@ void generate_input(char (*matrix)[MAX_HEIGHT]) {
     }
 
     for (i = 0; i < MAX_HEIGHT; i++) {
-        int j;
-        for (j = 0; j < MAX_WIDTH; j++) {
+        for (int j = 0; j < MAX_WIDTH; j++) {
             print_with_colors(matrix[i][j]);
-            //printf("%c", matrix[i][j]);
         }
         printf("\n");
     }
