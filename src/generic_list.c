@@ -2,20 +2,15 @@
 // Created by Jacopo Clocchiatti on 07/12/22.
 //
 
-#include "data_struct_helper.h"
+#include "../include/generic_list.h"
 
 typedef struct List List;
 
-struct List{
-    Node* arr;
-    int len;
-};
-
-
-List* init_list(int max_len){
+List* init_list() {
     List* list = (List*) calloc(1, sizeof(List));
-    list->arr = (Node*) calloc(max_len, sizeof (Node));
-    list->len = 0;
+    list->arr = (void**) calloc(1, sizeof(void*));
+    list->used = 0;
+    list->length = 1;
     return list;
 }
 
@@ -26,23 +21,22 @@ void free_list(List* list) {
     free(list);
 }
 
-List* insert_into_list(List* list, Node* node){
-    list->len++;
-    list->arr[list->len-1] = *node;
-    return list;
-}
-
-void print_list(List* list){
-    for (int i=0; i<list->len; i++){
-        printf("%c", list->arr[i].value);
+List* insert_into_list(List* list, void* node) {
+    if (list->used == list->length) {
+        list->length *= 2;
+        list->arr = realloc(list->arr, list->length * sizeof(void*));
     }
+
+    list->arr[list->used] = node;
+    list->used++;
+    return list;
 }
 
 // todo: better find alg
 // list is not ordered, linear scan might be best case
 bool find_in_list(Node* list, int list_len,  Node* node){
     for (int i = 0; i < list_len; i++){
-        if (list[i].value == node->value){
+        if (list[i].id == node->id){
             return true;
         }
     }

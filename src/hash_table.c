@@ -2,26 +2,9 @@
 // Created by Jacopo Clocchiatti on 08/12/22.
 //
 
-#include "list.c"
-
-typedef struct HashElement HashElement;
-typedef struct HashBucket HashBucket;
-typedef struct HashTable HashTable;
-
-struct HashElement{
-    char node_name;
-    int position;
-};
-
-struct HashBucket{
-    HashElement* arr;
-    int len;
-};
-
-struct HashTable{
-    HashBucket* buckets;
-    int len;
-};
+#include <stdio.h>
+#include <malloc/_malloc.h>
+#include "../include/hash_table.h"
 
 // todo: decide hash function
 int hash_func(){
