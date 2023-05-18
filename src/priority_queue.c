@@ -68,6 +68,7 @@ MinHeap* insert_into_heap(MinHeap* heap, Node* node) {
     return heap;
 }
 
+
 bool is_queue_empty(MinHeap* heap){
     if (heap->used <= 0){
         return true;
@@ -98,6 +99,20 @@ void heapify(MinHeap* heap, int i) {
         heap->arr[smallest] = temp;
         heapify(heap, smallest);
     }
+}
+
+MinHeap* remove_from_heap(MinHeap* heap, Node* node) {
+    // Find the node to remove
+    int i = 0;
+    while (heap->arr[i]->id != node->id){
+        i++;
+    }
+    // Swap the node with the last element
+    heap->arr[i] = heap->arr[heap->used - 1];
+    heap->used--;
+    // Call heapify on the root node
+    heapify(heap, 0);
+    return heap;
 }
 
 Node* pop_min(MinHeap* heap) {

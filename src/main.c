@@ -132,8 +132,8 @@ int main() {
     open_list = insert_into_heap(open_list, starting_node);
 
     bool completed = false;
-    bool is_a_star_done = !is_queue_empty(open_list) && !completed;
-    while (is_a_star_done) {
+    while (!is_queue_empty(open_list) && !completed) {
+        printf("----\n");
         Node* curr_node = pop_min(open_list);
 
         if (curr_node->id == destination_node->id) {
@@ -169,8 +169,8 @@ int main() {
             }
 
             curr_neighbour->heuristic_distance = compute_heuristic(*curr_neighbour, *destination_node);
-            curr_neighbour->normal_distance = curr_node->normal_distance + 0;
-            curr_neighbour->distance = curr_neighbour->heuristic_distance + curr_neighbour->normal_distance;
+            curr_neighbour->normal_distance = 0;
+            curr_neighbour->distance = curr_neighbour->heuristic_distance;
 
             bool is_node_already_open = find_in_heap(open_list, curr_neighbour);
             if (is_node_already_open)
@@ -178,6 +178,7 @@ int main() {
 
             insert_into_heap(open_list, curr_neighbour);
         }
+        free_list(neighbours);
         print_context(nodes, close_list);
     }
     return -1;
