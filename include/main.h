@@ -11,7 +11,6 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-#include </opt/homebrew/Cellar/open-mpi/4.1.4_2/include/mpi.h>
 #include </opt/homebrew/opt/libomp/include/omp.h>
 
 #include "../src/priority_queue.c"

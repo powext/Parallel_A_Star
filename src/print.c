@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "../include/colors.h"
 #include "../include/print.h"
+#include "../include/comm.h"
 
 void printf_with_colors(Node c) {
     if (c.type == cell)

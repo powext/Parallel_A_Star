@@ -5,6 +5,7 @@
 // TODO: implement hash into functions + finish update priority
 
 #include "../include/priority_queue.h"
+#include "../include/comm.h"
 
 
 int parent(int i){

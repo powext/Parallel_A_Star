@@ -1,10 +1,18 @@
 #include <printf.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 #include "../include/input_generator.h"
 #include "../include/node.h"
 #include "../include/priority_queue.h"
 #include "../include/generic_list.h"
 #include "../include/compute_distance.h"
 #include "../include/print.h"
+#include "../include/parallel.h"
+#include "../include/comm.h"
+
+int HEIGHT = 30;
+int WIDTH = 30;
 
 LinkedNode* add_neighbour(LinkedNode* curr, Node* neighbour) {
     LinkedNode* linked_neighbour = malloc(sizeof(LinkedNode));
@@ -26,19 +34,19 @@ void print_context(Node* nodes, List* visited_nodes) {
         // printf("%f\n", context_node->distance);
         context_node->type = visited;
     }
-    for (int i = 0; i < MAX_HEIGHT; i++) {
-        for (int j = 0; j < MAX_WIDTH; j++) {
-            printf_with_colors(nodes[(MAX_HEIGHT*i)+j]);
+    for (int i = 0; i < HEIGHT; i++) {
+        for (int j = 0; j < WIDTH; j++) {
+            printf_with_colors(nodes[(HEIGHT * i) + j]);
         }
         printf("\n");
     }
 }
 
-void initialize_nodes(char input_matrix[MAX_HEIGHT][MAX_WIDTH], Node* nodes, Node** starting_node, Node** destination_node) {
-    for (int i = 0; i < MAX_HEIGHT; i++) {
-        for (int j = 0; j < MAX_WIDTH; j++) {
+void initialize_nodes_from_matrix(char input_matrix[HEIGHT][WIDTH], Node* nodes, Node** starting_node, Node** destination_node) {
+    for (int i = 0; i < HEIGHT; i++) {
+        for (int j = 0; j < WIDTH; j++) {
             char curr = input_matrix[i][j];
-            int id = (MAX_HEIGHT * i) + j;
+            int id = (HEIGHT * i) + j;
             nodes[id] = (Node){
                     .id = id,
                     .x = j,
@@ -61,10 +69,51 @@ void initialize_nodes(char input_matrix[MAX_HEIGHT][MAX_WIDTH], Node* nodes, Nod
     }
 }
 
+void initialize_nodes_from_file(int size, Node* nodes, Node** starting_node, Node** destination_node) {
+    char filename[100];
+    sprintf(filename, "data/matrix_%d.txt", size);
+    FILE* fp = fopen(filename, "r");
+    if (fp == NULL) {
+        printf("[ERROR] Opening %s!\n", filename);
+        exit(1);
+    }
+
+    char curr;
+    int i = 0;
+    int j = 0;
+    while ((curr = fgetc(fp)) != EOF) {
+        if (curr == '\n') {
+            i++;
+            j = 0;
+            continue;
+        }
+        int id = (HEIGHT * i) + j;
+        nodes[id] = (Node){
+                .id = id,
+                .x = j,
+                .y = i,
+        };
+
+        if (curr == '-')
+            nodes[id].type = obstacle;
+        else if (curr == 'S') {
+            nodes[id].type = start;
+            *starting_node = &nodes[id];
+        }
+        else if (curr == 'E') {
+            nodes[id].type = end;
+            *destination_node = &nodes[id];
+        }
+        else if (curr == '+')
+            nodes[id].type = cell;
+        j++;
+    }
+}
+
 void initialize_arches_list(Node* nodes, List* arches_list) {
-    for (int i = 0; i < MAX_HEIGHT; i++) {
-        for (int j = 0; j < MAX_WIDTH; j++) {
-            int id = (MAX_HEIGHT * i) + j;
+    for (int i = 0; i < HEIGHT; i++) {
+        for (int j = 0; j < WIDTH; j++) {
+            int id = (HEIGHT * i) + j;
             Node* curr = &nodes[id];
             LinkedNode* linked_curr = malloc(sizeof(LinkedNode));
             linked_curr->node = curr;
@@ -73,22 +122,22 @@ void initialize_arches_list(Node* nodes, List* arches_list) {
             if (curr->x - 1 >= 0)
                 linked_succ = add_neighbour(
                         linked_succ == NULL ? linked_curr : linked_succ,
-                        &nodes[(MAX_HEIGHT * curr->y) + (curr->x - 1)]
+                        &nodes[(HEIGHT * curr->y) + (curr->x - 1)]
                 );
             if (curr->y - 1 >= 0)
                 linked_succ = add_neighbour(
                         linked_succ == NULL ? linked_curr : linked_succ,
-                        &nodes[(MAX_HEIGHT * (curr->y - 1)) + curr->x]
+                        &nodes[(HEIGHT * (curr->y - 1)) + curr->x]
                 );
-            if (curr->x + 1 < MAX_WIDTH)
+            if (curr->x + 1 < WIDTH)
                 linked_succ = add_neighbour(
                         linked_succ == NULL ? linked_curr : linked_succ,
-                        &nodes[(MAX_HEIGHT * curr->y) + (curr->x + 1)]
+                        &nodes[(HEIGHT * curr->y) + (curr->x + 1)]
                 );
-            if (curr->y + 1 < MAX_HEIGHT)
+            if (curr->y + 1 < HEIGHT)
                 add_neighbour(
                         linked_succ == NULL ? linked_curr : linked_succ,
-                        &nodes[(MAX_HEIGHT * (curr->y + 1)) + curr->x]
+                        &nodes[(HEIGHT * (curr->y + 1)) + curr->x]
                 );
             insert_into_list(arches_list, linked_curr);
         }
@@ -104,7 +153,6 @@ void initialize_lists(Node* starting_node, Node* destination_node, MinHeap** ope
     starting_node->distance = starting_node->heuristic_distance;
     *open_list = insert_into_heap(*open_list, starting_node);
 }
-
 
 void process_neighbours(List* arches_list, MinHeap* open_list, List* close_list, Node* destination_node, Node* curr_node) {
     LinkedNode* linked_neighbour = get_neighbours(arches_list, curr_node);
@@ -166,23 +214,92 @@ void search_path(Node* starting_node, Node* destination_node, Node* nodes, List*
     }
 }
 
-int main() {
-    setbuf(stdout, NULL);
+int look_for_string_parameter(char** argv, int argc, char* parameter) {
+    FILE* fp = fopen(argv[1], "r");
 
-    char input_matrix[MAX_HEIGHT][MAX_WIDTH];
-    generate_input(input_matrix);
+    if (fp == NULL) {
+        // print argv[1] string
+        printf("[ERROR] File %s not found\n", argv[1]);
+        char cwd[1024];
+        if (getcwd(cwd, sizeof(cwd)) != NULL) {
+            printf("[INFO] Current working dir: %s\n", cwd);
+        }
+        exit(1);
+    }
+    char* line = NULL;
+    size_t len = 0;
+    ssize_t read;
+    while ((read = getline(&line, &len, fp)) != -1) {
+        if (strstr(line, parameter) != NULL) {
+            return 1;
+        }
+    }
+    fclose(fp);
+    return 0;
+}
+
+int look_for_int_parameter(char** argv, int argc) {
+    FILE* fp = fopen(argv[1], "r");
+
+    if (fp == NULL) {
+        printf("[ERROR] File data/input.txt not found\n");
+        char cwd[1024];
+        if (getcwd(cwd, sizeof(cwd)) != NULL) {
+            printf("[INFO] Current working dir: %s\n", cwd);
+        }
+        exit(1);
+    }
+    char* line = NULL;
+    size_t len = 0;
+    ssize_t read;
+    while ((read = getline(&line, &len, fp)) != -1) {
+        char* token = strtok(line, " ");
+        while (token != NULL) {
+            if (atoi(token) != 0) {
+                return atoi(token);
+            }
+            token = strtok(NULL, " ");
+        }
+    }
+    fclose(fp);
+    return 0;
+}
+
+int main(int argc, char** argv) {
+    setbuf(stdout, NULL);
 
     Node* starting_node;
     Node* destination_node;
-    Node* nodes = malloc(MAX_HEIGHT * MAX_WIDTH * sizeof(Node));
+    Node* nodes;
 
-    initialize_nodes(input_matrix, nodes, &starting_node, &destination_node);
+    // file parameter imports data from the data/ directory
+    if (look_for_string_parameter(argv, argc, "file")) {
+        int matrix_input_size = look_for_int_parameter(argv, argc);
+        HEIGHT = WIDTH = matrix_input_size;
+        printf("[INFO] Taking data from matrix_%d.txt\n", matrix_input_size);
+        nodes = malloc(matrix_input_size * matrix_input_size * sizeof(Node));
+        initialize_nodes_from_file(matrix_input_size, nodes, &starting_node, &destination_node);
+    } else {
+        printf("[INFO] Input to be generated\n");
+        char input_matrix[HEIGHT][WIDTH];
+        generate_input(input_matrix);
+        nodes = malloc(HEIGHT * WIDTH * sizeof(Node));
+        initialize_nodes_from_matrix(input_matrix, nodes, &starting_node, &destination_node);
+    }
 
-    List* arches_list = init_list();
-    initialize_arches_list(nodes, arches_list);
+    // parallel parameter runs the parallel version of the program instead of the serial one
+    if (look_for_string_parameter(argv, argc, "parallel")) {
+        printf("[INFO] Algorithm running in parallel configuration\n");
+        parallel_root_init(nodes);
+        parallel_finalize();
+    } else {
+        printf("[INFO] Algorithm running in serial configuration\n");
+        List* arches_list = init_list();
+        initialize_arches_list(nodes, arches_list);
 
-    search_path(starting_node, destination_node, nodes, arches_list);
-
-    return -1;
+        search_path(starting_node, destination_node, nodes, arches_list);
+    }
+    free(nodes);
+    return 0;
 }
 

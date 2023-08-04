@@ -3,6 +3,7 @@
 //
 
 #include "../include/generic_list.h"
+#include "../include/comm.h"
 
 List* init_list() {
     List* list = (List*) malloc(sizeof(List));
