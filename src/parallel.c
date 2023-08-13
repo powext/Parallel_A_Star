@@ -1,96 +1,164 @@
 #include <printf.h>
+#include <math.h>
 #include "mpi.h"
-#include "../include/node.h"
 #import "stdlib.h"
 #include "../include/print.h"
 #include "../include/comm.h"
 
-extern int HEIGHT;
-extern int WIDTH;
+extern int GRID_HEIGHT;
+extern int GRID_WIDTH;
 
 MPI_Datatype create_node_datatype() {
-    int blockcounts[7] = {1, 1, 1, 1, 1, 1, 1};
-    MPI_Datatype types[7] = {MPI_INT, MPI_DOUBLE, MPI_DOUBLE, MPI_DOUBLE, MPI_INT, MPI_INT, MPI_INT};
-    MPI_Aint offsets[7];
+    MPI_Datatype CoordType;
+    MPI_Type_contiguous(2, MPI_INT, &CoordType);
+    MPI_Type_commit(&CoordType);
+
+    int blockcounts[6] = {1, 1, 1, 1, 1, 1};
+    MPI_Datatype types[6] = {MPI_INT, MPI_DOUBLE, MPI_DOUBLE, MPI_DOUBLE, CoordType, MPI_INT};
+    MPI_Aint offsets[6];
 
     offsets[0] = offsetof(Node, id);
     offsets[1] = offsetof(Node, distance);
     offsets[2] = offsetof(Node, normal_distance);
     offsets[3] = offsetof(Node, heuristic_distance);
-    offsets[4] = offsetof(Node, coordinates.x);
-    offsets[5] = offsetof(Node, coordinates.y);
-    offsets[6] = offsetof(Node, type);
+    offsets[4] = offsetof(Node, coordinates);
+    offsets[5] = offsetof(Node, type);
 
     MPI_Datatype mpi_node_type;
-    MPI_Type_create_struct(7, blockcounts, offsets, types, &mpi_node_type);
+    MPI_Type_create_struct(6, blockcounts, offsets, types, &mpi_node_type);
     MPI_Type_commit(&mpi_node_type);
 
     return mpi_node_type;
 }
 
-void distribute_work(Node* nodes_old, int n_chunks, int world_rank) {
-    Node** nodes = malloc(sizeof(Node*) * 20*20);
+void distribute_work(Node* nodes, int n_chunks, int world_rank) {
+    MPI_Datatype mpi_node_type = create_node_datatype();
 
     if (world_rank == 0) {
-        for (int i = 0; i < HEIGHT; i++) {
-            for (int j = 0; j < WIDTH; j++) {
-                nodes[(HEIGHT * i) + j] = &nodes_old[(HEIGHT * i) + j];
-            }
-            printf("\n");
+        MPI_Send(nodes, GRID_WIDTH * GRID_HEIGHT, mpi_node_type, 1, 0, MPI_COMM_WORLD);
+    } else if (world_rank == 1) {
+        Node* l_nodes = malloc(sizeof(Node) * GRID_WIDTH * GRID_HEIGHT);
+        MPI_Recv(l_nodes, GRID_WIDTH * GRID_HEIGHT, mpi_node_type, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        // print l_nodes
+        for (int i = 0; i < GRID_WIDTH * GRID_HEIGHT; i++) {
+            printf("%d;%d ", l_nodes[i].coordinates.x, l_nodes[i].coordinates.y);
         }
+        free(l_nodes);
+    }
+    MPI_Type_free(&mpi_node_type);
+}
+
+void distribute_work_advanced(Node* nodes, int n_chunks, int world_rank) {
+    if (sqrt(n_chunks) != (int) sqrt(n_chunks)) {
+        if (world_rank == 0) {
+            printf("Error: The number of processes must be a perfect square.\n");
+        }
+        MPI_Abort(MPI_COMM_WORLD, 1);
+    }
+    if (GRID_WIDTH * GRID_HEIGHT % n_chunks != 0) {
+        if (world_rank == 0) {
+            printf("Error: The total size of the array must be a multiple of the number of processes.\n");
+        }
+        MPI_Abort(MPI_COMM_WORLD, 1);
     }
 
-    // Calculate the extent of each block in the original matrix
-    int sizes[2] = {20, 20};
-    int subsizes[2] = {10, 5};
-    int starts[2] = {0, 0};
+    // print nodes
+    if (world_rank == 0)
+        for (int i = 0; i < GRID_WIDTH * GRID_HEIGHT; i++)
+            printf("%d ", nodes[i].id);
 
-    MPI_Datatype mpi_node_type = create_node_datatype();
-    MPI_Datatype mpi_contig_node_type;
-    MPI_Type_contiguous(1, mpi_node_type, &mpi_contig_node_type);
-    MPI_Type_commit(&mpi_contig_node_type);
-
-    // Create the subarray data type for the local_nodes
-    MPI_Datatype subarray_type;
-    MPI_Type_create_subarray(2, sizes, subsizes, starts, MPI_ORDER_C, mpi_contig_node_type, &subarray_type);
-    MPI_Type_commit(&subarray_type);
-
-    Node* local_nodes = (Node*)malloc(sizeof(Node) * 10 * 10);
-
+    int n_chunks_per_s = (int) sqrt(n_chunks);
+    int chunk_size = GRID_WIDTH * GRID_HEIGHT;
+    int chunk_s_length = (int) sqrt((double) chunk_size / n_chunks);
+    if (chunk_s_length * chunk_s_length * n_chunks != GRID_WIDTH * GRID_HEIGHT) {
+        if (world_rank == 0) {
+            printf("Error: The total size of the array must be a perfect square multiple of the number of processes.\n");
+        }
+        MPI_Abort(MPI_COMM_WORLD, 1);
+    }
+    // print debug variables
     if (world_rank == 0) {
-        MPI_Send(nodes, 1, subarray_type, 1, 0, MPI_COMM_WORLD);
-    } else if (world_rank == 1) {
-        printf("Rank %d receiving\n", world_rank);
-        MPI_Recv(local_nodes, 1, subarray_type, 0, 0, MPI_COMM_WORLD,
-                 MPI_STATUS_IGNORE);
-        printf("Rank %d received\n", world_rank);
-        for (int i = 0; i < HEIGHT; i++) {
-            for (int j = 0; j < 10; j++) {
-                printf_with_colors(local_nodes[(i * 10) + j]);
-            }
-            printf("\n");
+        printf("chunk_s_length: %d\n", chunk_s_length);
+        printf("n_chunks: %d\n", n_chunks);
+    }
+
+    int* displacements = malloc(sizeof(int) * n_chunks);
+    for (int j=0; j < n_chunks_per_s; j++) {
+        for (int i=0; i < n_chunks_per_s; i++) {
+            displacements[j * n_chunks_per_s + i] = (j * n_chunks_per_s * chunk_s_length) + i;
+        }
+    }
+    // print displacements as debug
+    if (world_rank == 0) {
+        printf("displacements: ");
+        for (int i = 0; i < n_chunks; i++) {
+            printf("%d ", displacements[i]);
         }
         printf("\n");
     }
 
-    MPI_Type_free(&mpi_node_type);
-    MPI_Type_free(&mpi_contig_node_type);
-    MPI_Type_free(&subarray_type);
-    free(local_nodes);
+    int* send_count = malloc(sizeof(int) * n_chunks);
+    for (int i = 0; i < n_chunks; i++)
+        send_count[i] = 1;
+
+    MPI_Datatype node_type = create_node_datatype();
+    MPI_Datatype node_vector_type, node_vector_type_resized;
+    MPI_Type_vector(chunk_s_length, chunk_s_length, GRID_WIDTH, node_type, &node_vector_type);
+    MPI_Type_commit(&node_vector_type);
+    MPI_Type_create_resized(node_vector_type, 0, chunk_s_length * sizeof(Node), &node_vector_type_resized);
+    MPI_Type_commit(&node_vector_type_resized);
+
+    // Scatter the data
+    Node* l_nodes = malloc(sizeof(Node) * chunk_s_length * chunk_s_length);
+    if (MPI_Scatterv(
+            nodes,
+            send_count,
+            displacements,
+            node_vector_type_resized,
+            l_nodes,
+            chunk_size,
+            node_type,
+            0,
+            MPI_COMM_WORLD)) {
+        printf("Error: Scatter error\n");
+        exit(1);
+    }
+
+    // Print lnodes as matrix for each rank concurrently
+    for (int i = 0; i < n_chunks; i++) {
+        if (world_rank == i) {
+            printf("Rank %d\n", world_rank);
+            for (int j = 0; j < chunk_s_length; j++) {
+                for (int k = 0; k < chunk_s_length; k++) {
+                    printf("%d:%d", l_nodes[j * chunk_s_length + k].coordinates.x, l_nodes[j * chunk_s_length + k].coordinates.y);
+                }
+                printf("\n");
+            }
+            printf("\n");
+        }
+        MPI_Barrier(MPI_COMM_WORLD);
+    }
+
+    free(l_nodes);
+    free(displacements);
+    free(send_count);
+    MPI_Type_free(&node_type);
+    MPI_Type_free(&node_vector_type);
+    MPI_Type_free(&node_vector_type_resized);
 }
 
 void parallel_root_init(Node* nodes) {
     MPI_Init(NULL, NULL);
 
-    int world_size;
+    int n_chunks;
     int world_rank;
     char processor_name[MPI_MAX_PROCESSOR_NAME];
     int name_len;
-    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+    MPI_Comm_size(MPI_COMM_WORLD, &n_chunks);
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
     MPI_Get_processor_name(processor_name, &name_len);
 
-    distribute_work(nodes, world_size, world_rank);
+    distribute_work_advanced(nodes, n_chunks, world_rank);
 
     if (world_rank != 0) return;
 }

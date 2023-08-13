@@ -8,7 +8,8 @@
 #include <malloc/_malloc.h>
 #include <printf.h>
 #include <stdbool.h>
-#include "../include/comm.h"
+#include "../include/node.h"
+#include "comm.h"
 
 typedef struct List{
     void** arr;

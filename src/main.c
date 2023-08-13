@@ -11,8 +11,10 @@
 #include "../include/parallel.h"
 #include "../include/comm.h"
 
-int HEIGHT = 30;
-int WIDTH = 30;
+int GRID_HEIGHT = 30;
+int GRID_WIDTH = 30;
+int DEBUG = 0;
+int PARALLEL = 0;
 
 LinkedNode* add_neighbour(LinkedNode* curr, Node* neighbour) {
     LinkedNode* linked_neighbour = malloc(sizeof(LinkedNode));
@@ -34,19 +36,19 @@ void print_context(Node* nodes, List* visited_nodes) {
         // printf("%f\n", context_node->distance);
         context_node->type = visited;
     }
-    for (int i = 0; i < HEIGHT; i++) {
-        for (int j = 0; j < WIDTH; j++) {
-            printf_with_colors(nodes[(HEIGHT * i) + j]);
+    for (int i = 0; i < GRID_HEIGHT; i++) {
+        for (int j = 0; j < GRID_WIDTH; j++) {
+            printf_with_colors(nodes[(GRID_HEIGHT * i) + j]);
         }
         printf("\n");
     }
 }
 
-void initialize_nodes_from_matrix(char input_matrix[HEIGHT][WIDTH], Node* nodes, Node** starting_node, Node** destination_node) {
-    for (int i = 0; i < HEIGHT; i++) {
-        for (int j = 0; j < WIDTH; j++) {
+void initialize_nodes_from_matrix(char input_matrix[GRID_HEIGHT][GRID_WIDTH], Node* nodes, Node** starting_node, Node** destination_node) {
+    for (int i = 0; i < GRID_HEIGHT; i++) {
+        for (int j = 0; j < GRID_WIDTH; j++) {
             char curr = input_matrix[i][j];
-            int id = (HEIGHT * i) + j;
+            int id = (GRID_HEIGHT * i) + j;
             nodes[id] = (Node){
                     .id = id,
                     .coordinates.x = j,
@@ -69,9 +71,7 @@ void initialize_nodes_from_matrix(char input_matrix[HEIGHT][WIDTH], Node* nodes,
     }
 }
 
-void initialize_nodes_from_file(int size, Node* nodes, Node** starting_node, Node** destination_node) {
-    char filename[100];
-    sprintf(filename, "data/matrix_%d.txt", size);
+void initialize_nodes_from_file(char* filename, Node* nodes, Node** starting_node, Node** destination_node) {
     FILE* fp = fopen(filename, "r");
     if (fp == NULL) {
         printf("[ERROR] Opening %s!\n", filename);
@@ -87,7 +87,7 @@ void initialize_nodes_from_file(int size, Node* nodes, Node** starting_node, Nod
             j = 0;
             continue;
         }
-        int id = (HEIGHT * i) + j;
+        int id = (GRID_HEIGHT * i) + j;
         nodes[id] = (Node){
                 .id = id,
                 .coordinates.x = j,
@@ -111,9 +111,9 @@ void initialize_nodes_from_file(int size, Node* nodes, Node** starting_node, Nod
 }
 
 void initialize_arches_list(Node* nodes, List* arches_list) {
-    for (int i = 0; i < HEIGHT; i++) {
-        for (int j = 0; j < WIDTH; j++) {
-            int id = (HEIGHT * i) + j;
+    for (int i = 0; i < GRID_HEIGHT; i++) {
+        for (int j = 0; j < GRID_WIDTH; j++) {
+            int id = (GRID_HEIGHT * i) + j;
             Node* curr = &nodes[id];
             LinkedNode* linked_curr = malloc(sizeof(LinkedNode));
             linked_curr->node = curr;
@@ -122,22 +122,22 @@ void initialize_arches_list(Node* nodes, List* arches_list) {
             if (curr->coordinates.x - 1 >= 0)
                 linked_succ = add_neighbour(
                         linked_succ == NULL ? linked_curr : linked_succ,
-                        &nodes[(HEIGHT * curr->coordinates.y) + (curr->coordinates.x - 1)]
+                        &nodes[(GRID_HEIGHT * curr->coordinates.y) + (curr->coordinates.x - 1)]
                 );
             if (curr->coordinates.y - 1 >= 0)
                 linked_succ = add_neighbour(
                         linked_succ == NULL ? linked_curr : linked_succ,
-                        &nodes[(HEIGHT * (curr->coordinates.y - 1)) + curr->coordinates.x]
+                        &nodes[(GRID_HEIGHT * (curr->coordinates.y - 1)) + curr->coordinates.x]
                 );
-            if (curr->coordinates.x + 1 < WIDTH)
+            if (curr->coordinates.x + 1 < GRID_WIDTH)
                 linked_succ = add_neighbour(
                         linked_succ == NULL ? linked_curr : linked_succ,
-                        &nodes[(HEIGHT * curr->coordinates.y) + (curr->coordinates.x + 1)]
+                        &nodes[(GRID_HEIGHT * curr->coordinates.y) + (curr->coordinates.x + 1)]
                 );
-            if (curr->coordinates.y + 1 < HEIGHT)
+            if (curr->coordinates.y + 1 < GRID_HEIGHT)
                 add_neighbour(
                         linked_succ == NULL ? linked_curr : linked_succ,
-                        &nodes[(HEIGHT * (curr->coordinates.y + 1)) + curr->coordinates.x]
+                        &nodes[(GRID_HEIGHT * (curr->coordinates.y + 1)) + curr->coordinates.x]
                 );
             insert_into_list(arches_list, linked_curr);
         }
@@ -217,63 +217,63 @@ void search_path(Node* starting_node, Node* destination_node, Node* nodes, List*
 char* look_for_file(char** argv, int argc) {
     for (int i = 1; i < argc; i++) { // Start from 1 to skip the program name (argv[0])
         // Check if the argument is a named parameter (starts with '-')
-        if (argv[i][0] == '-') {
-            // Compare the argument with various named parameters
-            if (strcmp(argv[i], "-file") == 0) {
-                // The next argument (i + 1) is the value for the "-input" parameter
-                if (i + 1 < argc) {
-                    printf("Input file: %s\n", argv[i + 1]);
-                    return argv[i + 1];
-                } else {
-                    printf("Missing value for -input parameter.\n");
-                }
+        if (argv[i][0] != '-') continue;
+        // Compare the argument with various named parameters
+        if (strcmp(argv[i], "-input") == 0) {
+            // The next argument (i + 1) is the value for the "-input" parameter
+            if (i + 1 < argc) {
+                printf("[INFO] Input file: %s\n", argv[i + 1]);
+                return argv[i + 1];
+            } else {
+                printf("[ERROR] Missing value for -input parameter.\n");
             }
         }
     }
     return NULL;
 }
 
-int look_for_mode(char** argv, int argc) {
+int look_for_char_flag(char** argv, int argc, char* flag) {
     for (int i = 1; i < argc; i++) { // Start from 1 to skip the program name (argv[0])
         // Check if the argument is a named parameter (starts with '-')
-        if (argv[i][0] == '-') {
-            // Compare the argument with various named parameters
-            if (strcmp(argv[i], "-parallel") == 0) {
-                // The next argument (i + 1) is the value for the "-output" parameter
-                return 1;
-            }
-        }
+        if (argv[i][0] != '-') continue;
+        // Compare the argument with various named parameters
+        if (strcmp(argv[i], flag) == 0) return 1;
     }
-
     return 0;
 }
 
 int look_for_size(char** argv, int argc) {
     for (int i = 1; i < argc; i++) { // Start from 1 to skip the program name (argv[0])
         // Check if the argument is a named parameter (starts with '-')
-        if (argv[i][0] == '-') {
-            // Compare the argument with various named parameters
-            if (strcmp(argv[i], "-size") == 0) {
-                // The next argument (i + 1) is the value for the "-input" parameter
-                if (i + 1 < argc) {
-                    printf("Maze dimension: %s\n", argv[i + 1]);
-                    return (int) argv[i + 1]; // Skip the value argument
-                } else {
-                    printf("Missing value for -size parameter.\n");
-                }
+        if (argv[i][0] != '-') continue;
+        // Compare the argument with the named parameter "-size"
+        if (strcmp(argv[i], "-size") != 0) continue;
+        // The next argument (i + 1) is the value for the "-size" parameter
+        if (i + 1 < argc) {
+            char *endptr;
+            int size = (int) strtol(argv[i + 1], &endptr, 10); // Convert the string to an integer
+
+            // Check if conversion was successful
+            if (*endptr == '\0') {
+                printf("[INFO] Maze dimension: %d\n", size);
+                return size;
+            } else {
+                printf("[ERROR] Invalid value for -size parameter: %s\n", argv[i + 1]);
             }
+        } else {
+            printf("[ERROR] Missing value for -size parameter.\n");
         }
     }
 
     return 0;
 }
 
-int find_maze_size(char* filename){
+int find_maze_size(char* filename) {
     // Open the file
     FILE *file = fopen(filename, "r");
 
     if (file == NULL) {
-        perror("Error opening the file");
+        perror("[ERROR] Error opening the file");
         return 1;
     }
 
@@ -287,9 +287,7 @@ int find_maze_size(char* filename){
         }
     }
 
-    // Close the file
     fclose(file);
-
     return length;
 }
 
@@ -301,37 +299,38 @@ int main(int argc, char** argv) {
     Node* nodes;
 
     // file parameter imports data from the data/ directory
-    char* filename = look_for_file(argv, argc);
-    if (filename != NULL) {
+    char* path_filename = look_for_file(argv, argc);
+    if (path_filename != NULL) {
         int matrix_input_size = look_for_size(argv, argc);
-        if (matrix_input_size < 1){
-            matrix_input_size = find_maze_size(filename);
-            if (matrix_input_size < 1){
-                printf("Maze dimension not specified! Please use -size parameter");
+        if (matrix_input_size < 1) {
+            matrix_input_size = find_maze_size(path_filename);
+            if (matrix_input_size < 1) {
+                printf("[ERROR] Maze dimension not specified! Please use -size parameter");
                 exit(1);
             }
         }
-        HEIGHT = WIDTH = matrix_input_size;
+        GRID_HEIGHT = GRID_WIDTH = matrix_input_size;
         printf("[INFO] Taking data from matrix_%d.txt\n", matrix_input_size);
         nodes = malloc(matrix_input_size * matrix_input_size * sizeof(Node));
-        initialize_nodes_from_file(matrix_input_size, nodes, &starting_node, &destination_node);
+        initialize_nodes_from_file(path_filename, nodes, &starting_node, &destination_node);
     } else {
         printf("[INFO] Input to be generated\n");
         int matrix_input_size = look_for_size(argv, argc);
-        if (matrix_input_size < 1){
-            printf("Matrix dimension not specified! Please use -size parameter");
+        if (matrix_input_size < 1) {
+            printf("[ERROR] Matrix dimension not specified! Please use -size parameter");
             exit(1);
         }
-        HEIGHT = WIDTH = matrix_input_size;
-        char input_matrix[HEIGHT][WIDTH];
+        GRID_HEIGHT = GRID_WIDTH = matrix_input_size;
+        char input_matrix[GRID_HEIGHT][GRID_WIDTH];
         generate_input(input_matrix);
-        nodes = malloc(HEIGHT * WIDTH * sizeof(Node));
+        nodes = malloc(GRID_HEIGHT * GRID_WIDTH * sizeof(Node));
         initialize_nodes_from_matrix(input_matrix, nodes, &starting_node, &destination_node);
     }
 
     // parallel parameter runs the parallel version of the program instead of the serial one
-    int mode = look_for_mode(argv, argc);
-    if (mode) {
+    PARALLEL = look_for_char_flag(argv, argc, "-parallel");
+    DEBUG = look_for_char_flag(argv, argc, "-debug");
+    if (PARALLEL) {
         printf("[INFO] Algorithm running in parallel configuration\n");
         parallel_root_init(nodes);
         parallel_finalize();

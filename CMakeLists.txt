@@ -8,5 +8,7 @@ set(CMAKE_C_STANDARD 11)
 find_package(MPI REQUIRED)
 add_executable(parallel_a_star_new src/main.c src/compute_distance.c src/hash_table.c src/input_generator.c src/generic_list.c src/priority_queue.c src/utility.c include/compute_distance.h include/main.h include/colors.h include/print.h src/print.c include/parallel.h src/parallel.c
         src/comm.c
-        include/comm.h)
+        include/comm.h
+        src/mock.c
+        include/mock.h)
 target_link_libraries(parallel_a_star_new PRIVATE MPI::MPI_C)

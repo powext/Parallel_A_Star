@@ -8,6 +8,7 @@
 #include <stdbool.h>
 #include "hash_table.h"
 #include "comm.h"
+#include "comm.h"
 #include <malloc/_malloc.h>
 #include <stddef.h>
 #include <stdio.h>

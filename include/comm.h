@@ -16,10 +16,11 @@ typedef struct Coordinates {
 /// Message sent to root rank after computation
 ///
 /// n_nodes indicates the number of nodes of the path, useful to iter the array and for heuristic
+/// nodes are inclusive of entry and exit points
 /// exit_points array has a fixed sides size of 2
 typedef struct ChunkPath {
     int n_nodes;
-    Coordinates **nodes;
+    Coordinates* nodes;
     Coordinates* exit_points;
 } ChunkPath;
 
