@@ -5,7 +5,7 @@
 #ifndef PARALLEL_A_STAR_NEW_PRINT_H
 #define PARALLEL_A_STAR_NEW_PRINT_H
 
-#include "node.h"
+#include "comm.h"
 
 void printf_with_colors(Node c);
 

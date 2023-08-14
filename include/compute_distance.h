@@ -6,7 +6,7 @@
 #define PARALLEL_A_STAR_COMPUTE_DISTANCE_H
 
 #include <stdbool.h>
-#include "node.h"
+#include "comm.h"
 
 double compute_total_distance();
 double compute_heuristic(Node a, Node b);

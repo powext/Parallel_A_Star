@@ -17,8 +17,8 @@ MPI_Datatype create_node_datatype() {
     offsets[1] = offsetof(Node, distance);
     offsets[2] = offsetof(Node, normal_distance);
     offsets[3] = offsetof(Node, heuristic_distance);
-    offsets[4] = offsetof(Node, x);
-    offsets[5] = offsetof(Node, y);
+    offsets[4] = offsetof(Node, coordinates.x);
+    offsets[5] = offsetof(Node, coordinates.y);
     offsets[6] = offsetof(Node, type);
 
     MPI_Datatype mpi_node_type;
