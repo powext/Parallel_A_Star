@@ -1,15 +1,12 @@
-#include <printf.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include "../include/input_generator.h"
-#include "../include/node.h"
 #include "../include/priority_queue.h"
 #include "../include/generic_list.h"
 #include "../include/compute_distance.h"
 #include "../include/print.h"
 #include "../include/parallel.h"
-#include "../include/comm.h"
 
 int HEIGHT = 30;
 int WIDTH = 30;
@@ -49,8 +46,8 @@ void initialize_nodes_from_matrix(char input_matrix[HEIGHT][WIDTH], Node* nodes,
             int id = (HEIGHT * i) + j;
             nodes[id] = (Node){
                     .id = id,
-                    .x = j,
-                    .y = i,
+                    .coordinates.x = j,
+                    .coordinates.y = i,
             };
 
             if (curr == '-')
@@ -90,8 +87,8 @@ void initialize_nodes_from_file(int size, Node* nodes, Node** starting_node, Nod
         int id = (HEIGHT * i) + j;
         nodes[id] = (Node){
                 .id = id,
-                .x = j,
-                .y = i,
+                .coordinates.x = j,
+                .coordinates.y = i,
         };
 
         if (curr == '-')
@@ -119,25 +116,25 @@ void initialize_arches_list(Node* nodes, List* arches_list) {
             linked_curr->node = curr;
             linked_curr->next = NULL;
             LinkedNode* linked_succ = NULL;
-            if (curr->x - 1 >= 0)
+            if (curr->coordinates.x - 1 >= 0)
                 linked_succ = add_neighbour(
                         linked_succ == NULL ? linked_curr : linked_succ,
-                        &nodes[(HEIGHT * curr->y) + (curr->x - 1)]
+                        &nodes[(HEIGHT * curr->coordinates.y) + (curr->coordinates.x - 1)]
                 );
-            if (curr->y - 1 >= 0)
+            if (curr->coordinates.y - 1 >= 0)
                 linked_succ = add_neighbour(
                         linked_succ == NULL ? linked_curr : linked_succ,
-                        &nodes[(HEIGHT * (curr->y - 1)) + curr->x]
+                        &nodes[(HEIGHT * (curr->coordinates.y - 1)) + curr->coordinates.x]
                 );
-            if (curr->x + 1 < WIDTH)
+            if (curr->coordinates.x + 1 < WIDTH)
                 linked_succ = add_neighbour(
                         linked_succ == NULL ? linked_curr : linked_succ,
-                        &nodes[(HEIGHT * curr->y) + (curr->x + 1)]
+                        &nodes[(HEIGHT * curr->coordinates.y) + (curr->coordinates.x + 1)]
                 );
-            if (curr->y + 1 < HEIGHT)
+            if (curr->coordinates.y + 1 < HEIGHT)
                 add_neighbour(
                         linked_succ == NULL ? linked_curr : linked_succ,
-                        &nodes[(HEIGHT * (curr->y + 1)) + curr->x]
+                        &nodes[(HEIGHT * (curr->coordinates.y + 1)) + curr->coordinates.x]
                 );
             insert_into_list(arches_list, linked_curr);
         }

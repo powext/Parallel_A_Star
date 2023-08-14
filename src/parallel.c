@@ -4,10 +4,12 @@
 #import "stdlib.h"
 #include "../include/print.h"
 #include "../include/comm.h"
+#include </usr/local/Cellar/libomp/16.0.6/include/omp.h>
+#define MAX_EXIT_POINTS 9
+#define MAX_PATH_NUM 72
 
 extern int HEIGHT;
 extern int WIDTH;
-
 MPI_Datatype create_node_datatype() {
     int blockcounts[7] = {1, 1, 1, 1, 1, 1, 1};
     MPI_Datatype types[7] = {MPI_INT, MPI_DOUBLE, MPI_DOUBLE, MPI_DOUBLE, MPI_INT, MPI_INT, MPI_INT};
@@ -17,8 +19,8 @@ MPI_Datatype create_node_datatype() {
     offsets[1] = offsetof(Node, distance);
     offsets[2] = offsetof(Node, normal_distance);
     offsets[3] = offsetof(Node, heuristic_distance);
-    offsets[4] = offsetof(Node, x);
-    offsets[5] = offsetof(Node, y);
+    offsets[4] = offsetof(Node, coordinates.x);
+    offsets[5] = offsetof(Node, coordinates.y);
     offsets[6] = offsetof(Node, type);
 
     MPI_Datatype mpi_node_type;
@@ -99,3 +101,59 @@ void parallel_finalize() {
     MPI_Finalize();
 }
 
+ChunkPath* compute_path(Node** matrix, int width, int heigth, Coordinates start, Coordinates end){
+    ChunkPath* tmp_path = malloc(sizeof(ChunkPath));
+    // TODO: compute single path
+    return tmp_path;
+}
+
+MsgChunkEnd* parallel_compute_paths(MsgChunkStart msg){
+    MsgChunkEnd* paths_found = malloc(sizeof(MsgChunkEnd));
+    paths_found->paths = malloc(MAX_PATH_NUM*sizeof(ChunkPath));
+    for (int i = 0; i < MAX_PATH_NUM; i++){
+        paths_found->paths[i] = *(ChunkPath*) NULL;
+    }
+
+    if (msg.starting_point != NULL & msg.ending_point != NULL){
+        paths_found->paths[0] = *compute_path(msg.matrix, msg.chunk_w, msg.chunk_h, msg.starting_point, msg.ending_point);
+    }
+    else if (msg.starting_point != NULL & msg.ending_point == NULL){
+#pragma omp parallel for
+        for (int i = 0; i < MAX_EXIT_POINTS; i++){
+            if (msg.exit_points[i] != NULL){
+                ChunkPath* new_path = compute_path(msg.matrix, msg.chunk_w, msg.chunk_h, msg.exit_points[i], msg.ending_point);
+                paths_found->paths[i] = *new_path;}
+        }
+    }
+    else if (msg.starting_point == NULL & msg.ending_point != NULL){
+# pragma omp parallel for
+        for (int i = 0; i < MAX_EXIT_POINTS; i++){
+            if (msg.exit_points[i] != NULL){
+                ChunkPath* new_path = compute_path(msg.matrix, msg.chunk_w, msg.chunk_h, msg.exit_points[i], msg.ending_point);
+                paths_found->paths[i] = *new_path;
+            }
+        }
+    }
+    else if (msg.starting_point == NULL & msg.ending_point == NULL){
+        int p = 0;
+        // omp_lock_t lock;
+        // omp_init_lock(&lock);
+# pragma omp parallel for private(i,j) shared(p, msg, paths_found, MAX_EXIT_POINTS)
+        for (int i = 0; i < MAX_EXIT_POINTS - 1; i++){
+            for (int j = i + 1; j < MAX_EXIT_POINTS; j++){
+                if (msg.exit_points[i] != NULL && msg.exit_points[i] != NULL && i != j){
+                    ChunkPath* new_path = compute_path(msg.matrix, msg.chunk_w, msg.chunk_h, msg.exit_points[i], msg.ending_point);
+#pragma omp critical
+                    {
+                        paths_found->paths[p] = *new_path;
+                    }
+#pragma omp atomic
+                    p++;
+                }
+            }
+        }
+        // omp_destroy_lock(&lock);
+    }
+
+    return paths_found;
+}

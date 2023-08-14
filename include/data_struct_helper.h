@@ -7,7 +7,7 @@
 
 #endif //PARALLEL_A_STAR_LIST_H
 
-#include "node.h"
+#include "comm.h"
 
 #include <stdlib.h>
 #include <stdio.h>

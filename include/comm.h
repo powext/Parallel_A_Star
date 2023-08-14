@@ -16,7 +16,7 @@ typedef struct Coordinates {
 /// Message sent to root rank after computation
 ///
 /// n_nodes indicates the number of nodes of the path, useful to iter the array and for heuristic
-/// exit_points array has a fixed sides size of 2
+/// exit_points array has a fixed size of 2
 typedef struct ChunkPath {
     int n_nodes;
     Coordinates **nodes;
@@ -56,8 +56,9 @@ typedef struct MsgChunkStart {
 /// Message sent to root rank after computation
 ///
 /// paths array has a fixed size {N_EXIT_POINTS_PER_CHUNK}, some entries could be NULL
-struct MsgChunkEnd {
+typedef struct MsgChunkEnd {
     ChunkPath* paths;
-};
+    int num_of_paths;
+} MsgChunkEnd;
 
 #endif //PARALLEL_A_STAR_NEW_COMM_H
