@@ -49,8 +49,8 @@ void initialize_nodes_from_matrix(char input_matrix[HEIGHT][WIDTH], Node* nodes,
             int id = (HEIGHT * i) + j;
             nodes[id] = (Node){
                     .id = id,
-                    .x = j,
-                    .y = i,
+                    .coordinates.x = j,
+                    .coordinates.y = i,
             };
 
             if (curr == '-')
@@ -90,8 +90,8 @@ void initialize_nodes_from_file(int size, Node* nodes, Node** starting_node, Nod
         int id = (HEIGHT * i) + j;
         nodes[id] = (Node){
                 .id = id,
-                .x = j,
-                .y = i,
+                .coordinates.x = j,
+                .coordinates.y = i,
         };
 
         if (curr == '-')
@@ -119,25 +119,25 @@ void initialize_arches_list(Node* nodes, List* arches_list) {
             linked_curr->node = curr;
             linked_curr->next = NULL;
             LinkedNode* linked_succ = NULL;
-            if (curr->x - 1 >= 0)
+            if (curr->coordinates.x - 1 >= 0)
                 linked_succ = add_neighbour(
                         linked_succ == NULL ? linked_curr : linked_succ,
-                        &nodes[(HEIGHT * curr->y) + (curr->x - 1)]
+                        &nodes[(HEIGHT * curr->coordinates.y) + (curr->coordinates.x - 1)]
                 );
-            if (curr->y - 1 >= 0)
+            if (curr->coordinates.y - 1 >= 0)
                 linked_succ = add_neighbour(
                         linked_succ == NULL ? linked_curr : linked_succ,
-                        &nodes[(HEIGHT * (curr->y - 1)) + curr->x]
+                        &nodes[(HEIGHT * (curr->coordinates.y - 1)) + curr->coordinates.x]
                 );
-            if (curr->x + 1 < WIDTH)
+            if (curr->coordinates.x + 1 < WIDTH)
                 linked_succ = add_neighbour(
                         linked_succ == NULL ? linked_curr : linked_succ,
-                        &nodes[(HEIGHT * curr->y) + (curr->x + 1)]
+                        &nodes[(HEIGHT * curr->coordinates.y) + (curr->coordinates.x + 1)]
                 );
-            if (curr->y + 1 < HEIGHT)
+            if (curr->coordinates.y + 1 < HEIGHT)
                 add_neighbour(
                         linked_succ == NULL ? linked_curr : linked_succ,
-                        &nodes[(HEIGHT * (curr->y + 1)) + curr->x]
+                        &nodes[(HEIGHT * (curr->coordinates.y + 1)) + curr->coordinates.x]
                 );
             insert_into_list(arches_list, linked_curr);
         }
@@ -214,55 +214,83 @@ void search_path(Node* starting_node, Node* destination_node, Node* nodes, List*
     }
 }
 
-int look_for_string_parameter(char** argv, int argc, char* parameter) {
-    FILE* fp = fopen(argv[1], "r");
+char* look_for_file(char** argv, int argc) {
+    for (int i = 1; i < argc; i++) { // Start from 1 to skip the program name (argv[0])
+        // Check if the argument is a named parameter (starts with '-')
+        if (argv[i][0] == '-') {
+            // Compare the argument with various named parameters
+            if (strcmp(argv[i], "-file") == 0) {
+                // The next argument (i + 1) is the value for the "-input" parameter
+                if (i + 1 < argc) {
+                    printf("Input file: %s\n", argv[i + 1]);
+                    return argv[i + 1];
+                } else {
+                    printf("Missing value for -input parameter.\n");
+                }
+            }
+        }
+    }
+    return NULL;
+}
 
-    if (fp == NULL) {
-        // print argv[1] string
-        printf("[ERROR] File %s not found\n", argv[1]);
-        char cwd[1024];
-        if (getcwd(cwd, sizeof(cwd)) != NULL) {
-            printf("[INFO] Current working dir: %s\n", cwd);
-        }
-        exit(1);
-    }
-    char* line = NULL;
-    size_t len = 0;
-    ssize_t read;
-    while ((read = getline(&line, &len, fp)) != -1) {
-        if (strstr(line, parameter) != NULL) {
-            return 1;
+int look_for_mode(char** argv, int argc) {
+    for (int i = 1; i < argc; i++) { // Start from 1 to skip the program name (argv[0])
+        // Check if the argument is a named parameter (starts with '-')
+        if (argv[i][0] == '-') {
+            // Compare the argument with various named parameters
+            if (strcmp(argv[i], "-parallel") == 0) {
+                // The next argument (i + 1) is the value for the "-output" parameter
+                return 1;
+            }
         }
     }
-    fclose(fp);
+
     return 0;
 }
 
-int look_for_int_parameter(char** argv, int argc) {
-    FILE* fp = fopen(argv[1], "r");
-
-    if (fp == NULL) {
-        printf("[ERROR] File data/input.txt not found\n");
-        char cwd[1024];
-        if (getcwd(cwd, sizeof(cwd)) != NULL) {
-            printf("[INFO] Current working dir: %s\n", cwd);
-        }
-        exit(1);
-    }
-    char* line = NULL;
-    size_t len = 0;
-    ssize_t read;
-    while ((read = getline(&line, &len, fp)) != -1) {
-        char* token = strtok(line, " ");
-        while (token != NULL) {
-            if (atoi(token) != 0) {
-                return atoi(token);
+int look_for_size(char** argv, int argc) {
+    for (int i = 1; i < argc; i++) { // Start from 1 to skip the program name (argv[0])
+        // Check if the argument is a named parameter (starts with '-')
+        if (argv[i][0] == '-') {
+            // Compare the argument with various named parameters
+            if (strcmp(argv[i], "-size") == 0) {
+                // The next argument (i + 1) is the value for the "-input" parameter
+                if (i + 1 < argc) {
+                    printf("Maze dimension: %s\n", argv[i + 1]);
+                    return (int) argv[i + 1]; // Skip the value argument
+                } else {
+                    printf("Missing value for -size parameter.\n");
+                }
             }
-            token = strtok(NULL, " ");
         }
     }
-    fclose(fp);
+
     return 0;
+}
+
+int find_maze_size(char* filename){
+    // Open the file
+    FILE *file = fopen(filename, "r");
+
+    if (file == NULL) {
+        perror("Error opening the file");
+        return 1;
+    }
+
+    // Calculate the length of the first row without whitespaces
+    int length = 0;
+    int c; // Variable to hold the current character
+
+    while ((c = fgetc(file)) != EOF && c != '\n') {
+        if (!isspace(c)) {
+            length++;
+        }
+    }
+
+    // Close the file
+    fclose(file);
+
+    return length;
 }
 
 int main(int argc, char** argv) {
@@ -273,14 +301,28 @@ int main(int argc, char** argv) {
     Node* nodes;
 
     // file parameter imports data from the data/ directory
-    if (look_for_string_parameter(argv, argc, "file")) {
-        int matrix_input_size = look_for_int_parameter(argv, argc);
+    char* filename = look_for_file(argv, argc);
+    if (filename != NULL) {
+        int matrix_input_size = look_for_size(argv, argc);
+        if (matrix_input_size < 1){
+            matrix_input_size = find_maze_size(filename);
+            if (matrix_input_size < 1){
+                printf("Maze dimension not specified! Please use -size parameter");
+                exit(1);
+            }
+        }
         HEIGHT = WIDTH = matrix_input_size;
         printf("[INFO] Taking data from matrix_%d.txt\n", matrix_input_size);
         nodes = malloc(matrix_input_size * matrix_input_size * sizeof(Node));
         initialize_nodes_from_file(matrix_input_size, nodes, &starting_node, &destination_node);
     } else {
         printf("[INFO] Input to be generated\n");
+        int matrix_input_size = look_for_size(argv, argc);
+        if (matrix_input_size < 1){
+            printf("Matrix dimension not specified! Please use -size parameter");
+            exit(1);
+        }
+        HEIGHT = WIDTH = matrix_input_size;
         char input_matrix[HEIGHT][WIDTH];
         generate_input(input_matrix);
         nodes = malloc(HEIGHT * WIDTH * sizeof(Node));
@@ -288,7 +330,8 @@ int main(int argc, char** argv) {
     }
 
     // parallel parameter runs the parallel version of the program instead of the serial one
-    if (look_for_string_parameter(argv, argc, "parallel")) {
+    int mode = look_for_mode(argv, argc);
+    if (mode) {
         printf("[INFO] Algorithm running in parallel configuration\n");
         parallel_root_init(nodes);
         parallel_finalize();

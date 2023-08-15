@@ -7,7 +7,7 @@
 
 #include <stdbool.h>
 #include "hash_table.h"
-#include "node.h"
+#include "comm.h"
 #include <malloc/_malloc.h>
 #include <stddef.h>
 #include <stdio.h>

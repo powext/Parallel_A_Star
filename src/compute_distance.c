@@ -6,7 +6,7 @@
 #include "../include/compute_distance.h"
 
 double compute_heuristic(Node a, Node b){
-    int dx = abs(a.x - b.x);
-    int dy = abs(a.y - b.y);
+    int dx = abs(a.coordinates.x - b.coordinates.x);
+    int dy = abs(a.coordinates.y - b.coordinates.y);
     return (double) (dx + dy);
 }
