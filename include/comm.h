@@ -34,6 +34,17 @@ typedef struct Node {
     NodeType type;
 } Node;
 
+typedef struct PriorityQueueNode {
+    Node* node;
+    double priority;
+} PriorityQueueNode;
+
+typedef struct PriorityQueue {
+    int size;
+    int capacity;
+    PriorityQueueNode* nodes;
+} PriorityQueue;
+
 /// Message sent to computing ranks with initial data
 ///
 /// Since the matrix should be contiguous the nodes a saved in 1 dimension.
