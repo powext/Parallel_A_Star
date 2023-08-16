@@ -1,5 +1,6 @@
 #include <printf.h>
 #include <math.h>
+#include <tic.h>
 #include "mpi.h"
 #import "stdlib.h"
 #include "../include/print.h"
@@ -7,6 +8,7 @@
 
 extern int GRID_HEIGHT;
 extern int GRID_WIDTH;
+extern int DEBUG;
 
 MPI_Datatype create_node_datatype() {
     MPI_Datatype CoordType;
@@ -32,54 +34,37 @@ MPI_Datatype create_node_datatype() {
 }
 
 void distribute_work(Node* nodes, int n_chunks, int world_rank) {
-    MPI_Datatype mpi_node_type = create_node_datatype();
-
-    if (world_rank == 0) {
-        MPI_Send(nodes, GRID_WIDTH * GRID_HEIGHT, mpi_node_type, 1, 0, MPI_COMM_WORLD);
-    } else if (world_rank == 1) {
-        Node* l_nodes = malloc(sizeof(Node) * GRID_WIDTH * GRID_HEIGHT);
-        MPI_Recv(l_nodes, GRID_WIDTH * GRID_HEIGHT, mpi_node_type, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-        // print l_nodes
-        for (int i = 0; i < GRID_WIDTH * GRID_HEIGHT; i++) {
-            printf("%d;%d ", l_nodes[i].coordinates.x, l_nodes[i].coordinates.y);
-        }
-        free(l_nodes);
-    }
-    MPI_Type_free(&mpi_node_type);
-}
-
-void distribute_work_advanced(Node* nodes, int n_chunks, int world_rank) {
     if (sqrt(n_chunks) != (int) sqrt(n_chunks)) {
         if (world_rank == 0) {
-            printf("Error: The number of processes must be a perfect square.\n");
+            printf("[ERROR] The number of processes must be a perfect square.\n");
         }
         MPI_Abort(MPI_COMM_WORLD, 1);
     }
     if (GRID_WIDTH * GRID_HEIGHT % n_chunks != 0) {
         if (world_rank == 0) {
-            printf("Error: The total size of the array must be a multiple of the number of processes.\n");
+            printf("[ERROR] The total size of the array must be a multiple of the number of processes.\n");
         }
         MPI_Abort(MPI_COMM_WORLD, 1);
     }
 
-    // print nodes
-    if (world_rank == 0)
+    if (DEBUG && world_rank == 0) {
+        printf("[DEBUG] R0 - Nodes:");
         for (int i = 0; i < GRID_WIDTH * GRID_HEIGHT; i++)
             printf("%d ", nodes[i].id);
+    }
 
     int n_chunks_per_s = (int) sqrt(n_chunks);
     int chunk_size = GRID_WIDTH * GRID_HEIGHT;
     int chunk_s_length = (int) sqrt((double) chunk_size / n_chunks);
     if (chunk_s_length * chunk_s_length * n_chunks != GRID_WIDTH * GRID_HEIGHT) {
         if (world_rank == 0) {
-            printf("Error: The total size of the array must be a perfect square multiple of the number of processes.\n");
+            printf("[ERROR] The total size of the array must be a perfect square multiple of the number of processes.\n");
         }
         MPI_Abort(MPI_COMM_WORLD, 1);
     }
-    // print debug variables
-    if (world_rank == 0) {
-        printf("chunk_s_length: %d\n", chunk_s_length);
-        printf("n_chunks: %d\n", n_chunks);
+    if (DEBUG && world_rank == 0) {
+        printf("[DEBUG] R0 - chunk_s_length: %d\n", chunk_s_length);
+        printf("[DEBUG] R0 - n_chunks: %d\n", n_chunks);
     }
 
     int* displacements = malloc(sizeof(int) * n_chunks);
@@ -88,9 +73,9 @@ void distribute_work_advanced(Node* nodes, int n_chunks, int world_rank) {
             displacements[j * n_chunks_per_s + i] = (j * n_chunks_per_s * chunk_s_length) + i;
         }
     }
-    // print displacements as debug
-    if (world_rank == 0) {
-        printf("displacements: ");
+
+    if (DEBUG && world_rank == 0) {
+        printf("[DEBUG] R0 - Displacements: ");
         for (int i = 0; i < n_chunks; i++) {
             printf("%d ", displacements[i]);
         }
@@ -124,20 +109,20 @@ void distribute_work_advanced(Node* nodes, int n_chunks, int world_rank) {
         exit(1);
     }
 
-    // Print lnodes as matrix for each rank concurrently
-    for (int i = 0; i < n_chunks; i++) {
-        if (world_rank == i) {
-            printf("Rank %d\n", world_rank);
-            for (int j = 0; j < chunk_s_length; j++) {
-                for (int k = 0; k < chunk_s_length; k++) {
-                    printf("%d:%d", l_nodes[j * chunk_s_length + k].coordinates.x, l_nodes[j * chunk_s_length + k].coordinates.y);
+    if (DEBUG)
+        for (int i = 0; i < n_chunks; i++) {
+            if (world_rank == i) {
+                printf("Rank %d\n", world_rank);
+                for (int j = 0; j < chunk_s_length; j++) {
+                    for (int k = 0; k < chunk_s_length; k++) {
+                        printf("%d:%d", l_nodes[j * chunk_s_length + k].coordinates.x, l_nodes[j * chunk_s_length + k].coordinates.y);
+                    }
+                    printf("\n");
                 }
                 printf("\n");
             }
-            printf("\n");
+            MPI_Barrier(MPI_COMM_WORLD);
         }
-        MPI_Barrier(MPI_COMM_WORLD);
-    }
 
     free(l_nodes);
     free(displacements);
@@ -158,7 +143,7 @@ void parallel_root_init(Node* nodes) {
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
     MPI_Get_processor_name(processor_name, &name_len);
 
-    distribute_work_advanced(nodes, n_chunks, world_rank);
+    distribute_work(nodes, n_chunks, world_rank);
 
     if (world_rank != 0) return;
 }
