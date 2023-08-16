@@ -59,7 +59,8 @@ typedef struct PriorityQueue {
 typedef struct MsgChunkStart {
     Node ** matrix;
     int chunk_w, chunk_h;
-    Coordinates starting_point, ending_point;
+    Coordinates* starting_point;
+    Coordinates* ending_point;
     Coordinates* exit_points;
 } MsgChunkStart;
 
