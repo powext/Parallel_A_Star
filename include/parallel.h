@@ -8,5 +8,5 @@
 #endif //PARALLEL_A_STAR_NEW_PARALLEL_H
 #include "comm.h"
 
-void parallel_root_init(Node* nodes);
+void parallel_root_init(Node* nodes, Node* starting_node, Node* ending_node);
 void parallel_finalize();

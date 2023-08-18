@@ -47,7 +47,7 @@ typedef struct Node {
 /// starting_point and ending_point could be NULL if not present in the local chunk
 /// exit_points array has a fixed size {N_EXIT_POINTS_PER_CHUNK}, some entries could be NULL
 typedef struct MsgChunkStart {
-    Node ** matrix;
+    // Node ** matrix; sent with MPI_scatterv
     int chunk_w, chunk_h;
     Coordinates starting_point, ending_point;
     Coordinates* exit_points;

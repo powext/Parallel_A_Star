@@ -332,7 +332,7 @@ int main(int argc, char** argv) {
     DEBUG = look_for_char_flag(argv, argc, "-debug");
     if (PARALLEL) {
         printf("[INFO] Algorithm running in parallel configuration\n");
-        parallel_root_init(nodes);
+        parallel_root_init(nodes, starting_node, destination_node);
         parallel_finalize();
     } else {
         printf("[INFO] Algorithm running in serial configuration\n");

@@ -4,11 +4,11 @@
 #include "mpi.h"
 #import "stdlib.h"
 #include "../include/print.h"
-#include "../include/comm.h"
 
 extern int GRID_HEIGHT;
 extern int GRID_WIDTH;
 extern int DEBUG;
+
 
 MPI_Datatype create_node_datatype() {
     MPI_Datatype CoordType;
@@ -33,7 +33,36 @@ MPI_Datatype create_node_datatype() {
     return mpi_node_type;
 }
 
-void distribute_work(Node* nodes, int n_chunks, int world_rank) {
+MPI_Datatype create_MsgStart_datatype() {
+    MPI_Datatype mpi_coordinates;
+    int blocklengths_coords[2] = {1, 1};
+    MPI_Datatype types_coords[2] = {MPI_INT, MPI_INT};
+    MPI_Aint offsets_coords[2];
+
+    offsets_coords[0] = offsetof(Coordinates, x);
+    offsets_coords[1] = offsetof(Coordinates, y);
+
+    MPI_Type_create_struct(2, blocklengths_coords, offsets_coords, types_coords, &mpi_coordinates);
+    MPI_Type_commit(&mpi_coordinates);
+
+
+    MPI_Datatype mpi_msgchunkstart;
+    int blocklengths_chunk[5] = {1, 1, 1, 1, 1}; // MPI_UNDEFINED for exit_points since its size is dynamic
+    MPI_Datatype types_chunk[5] = {MPI_INT, MPI_INT, mpi_coordinates, mpi_coordinates, mpi_coordinates};
+    MPI_Aint offsets_chunk[5];
+
+    offsets_chunk[0] = offsetof(MsgChunkStart, chunk_w);
+    offsets_chunk[1] = offsetof(MsgChunkStart, chunk_h);
+    offsets_chunk[2] = offsetof(MsgChunkStart, starting_point);
+    offsets_chunk[3] = offsetof(MsgChunkStart, ending_point);
+    offsets_chunk[4] = offsetof(MsgChunkStart, exit_points);
+
+    MPI_Type_create_struct(5, blocklengths_chunk, offsets_chunk, types_chunk, &mpi_msgchunkstart);
+    MPI_Type_commit(&mpi_msgchunkstart);
+    return mpi_msgchunkstart;
+}
+
+void distribute_work(Node* nodes, Node* starting_node, Node* destination_node, int n_chunks, int world_rank) {
     if (sqrt(n_chunks) != (int) sqrt(n_chunks)) {
         if (world_rank == 0) {
             printf("[ERROR] The number of processes must be a perfect square.\n");
@@ -109,13 +138,45 @@ void distribute_work(Node* nodes, int n_chunks, int world_rank) {
         exit(1);
     }
 
-    if (DEBUG)
+    MPI_Datatype msgStartDatatype = create_MsgStart_datatype();
+    if (world_rank == 0) {
+        printf("Starting point: %d:%d\n", starting_node->coordinates.x, starting_node->coordinates.y);
+        for (int i = 0; i < n_chunks; i++) {
+            MsgChunkStart msg = {
+                    .chunk_w = chunk_s_length,
+                    .chunk_h = chunk_s_length,
+                    .starting_point = {starting_node->coordinates.x, starting_node->coordinates.y},
+                    .ending_point = {destination_node->coordinates.x, destination_node->coordinates.y},
+                    .exit_points = NULL
+            };
+            if (MPI_Send(&msg, 1, msgStartDatatype, i, 0, MPI_COMM_WORLD)) {
+                printf("[Error]: R0 - Send error\n");
+                exit(1);
+            }
+        }
+    }
+    MsgChunkStart msg;
+    if (MPI_Recv(&msg, 1, msgStartDatatype, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE)) {
+        printf("[Error]: Recv error\n");
+        exit(1);
+    }
+    if (DEBUG) {
+        for (int i = 0; i < n_chunks; i++) {
+            if (world_rank == i) {
+                printf("Starting point: %d:%d\n", msg.starting_point.x, msg.starting_point.y);
+            }
+            MPI_Barrier(MPI_COMM_WORLD);
+        }
+    }
+
+    if (DEBUG) {
         for (int i = 0; i < n_chunks; i++) {
             if (world_rank == i) {
                 printf("Rank %d\n", world_rank);
                 for (int j = 0; j < chunk_s_length; j++) {
                     for (int k = 0; k < chunk_s_length; k++) {
-                        printf("%d:%d", l_nodes[j * chunk_s_length + k].coordinates.x, l_nodes[j * chunk_s_length + k].coordinates.y);
+                        printf("%d:%d", l_nodes[j * chunk_s_length + k].coordinates.x,
+                               l_nodes[j * chunk_s_length + k].coordinates.y);
                     }
                     printf("\n");
                 }
@@ -123,6 +184,7 @@ void distribute_work(Node* nodes, int n_chunks, int world_rank) {
             }
             MPI_Barrier(MPI_COMM_WORLD);
         }
+    }
 
     free(l_nodes);
     free(displacements);
@@ -132,7 +194,7 @@ void distribute_work(Node* nodes, int n_chunks, int world_rank) {
     MPI_Type_free(&node_vector_type_resized);
 }
 
-void parallel_root_init(Node* nodes) {
+void parallel_root_init(Node* nodes, Node* starting_node, Node* destination_node) {
     MPI_Init(NULL, NULL);
 
     int n_chunks;
@@ -143,7 +205,7 @@ void parallel_root_init(Node* nodes) {
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
     MPI_Get_processor_name(processor_name, &name_len);
 
-    distribute_work(nodes, n_chunks, world_rank);
+    distribute_work(nodes, starting_node, destination_node, n_chunks, world_rank);
 
     if (world_rank != 0) return;
 }
