@@ -4,6 +4,7 @@
 #include "mpi.h"
 #import "stdlib.h"
 #include "../include/print.h"
+#include "../include/comm.h"
 
 extern int GRID_HEIGHT;
 extern int GRID_WIDTH;
@@ -47,7 +48,7 @@ MPI_Datatype create_MsgStart_datatype() {
 
 
     MPI_Datatype mpi_msgchunkstart;
-    int blocklengths_chunk[5] = {1, 1, 1, 1, 1}; // MPI_UNDEFINED for exit_points since its size is dynamic
+    int blocklengths_chunk[5] = {1, 1, 1, 1, N_EXIT_POINTS_PER_CHUNK};
     MPI_Datatype types_chunk[5] = {MPI_INT, MPI_INT, mpi_coordinates, mpi_coordinates, mpi_coordinates};
     MPI_Aint offsets_chunk[5];
 
@@ -60,6 +61,71 @@ MPI_Datatype create_MsgStart_datatype() {
     MPI_Type_create_struct(5, blocklengths_chunk, offsets_chunk, types_chunk, &mpi_msgchunkstart);
     MPI_Type_commit(&mpi_msgchunkstart);
     return mpi_msgchunkstart;
+}
+
+void find_chunk_corners_exit_points(Node* nodes, int chunk_side_length, Coordinates initial, Coordinates *exit_points) {
+    enum Direction {
+        up, down, left, right
+    };
+    struct Angle {
+        Coordinates coordinates;
+        enum Direction directions[2];
+    };
+    struct Angle corners[4] = {
+            {initial, {up, left}},
+            {initial.x + chunk_side_length -1, initial.y, {right, up}},
+            {initial.x + chunk_side_length -1, initial.y + chunk_side_length -1 + chunk_side_length -1, {down, right}},
+            {initial.x, initial.y + chunk_side_length -1, {left, down}}
+    };
+    for (int i = 0; i < 4; i++) {
+        Coordinates corner = corners[i].coordinates;
+        enum Direction* directions = corners[i].directions;
+        if (DEBUG) {
+            printf("[DEBUG] Corner: %d:%d\n", corner.x, corner.y);
+        }
+        for (int j = 0; j < 2; j++) {
+            enum Direction direction = directions[j];
+            if (DEBUG) {
+                printf("[DEBUG] Direction: %d\n", direction);
+            }
+            Coordinates outlet_coords = corner;
+            switch (direction) {
+                case up:
+                    outlet_coords.y = corner.y - 1;
+                    break;
+                case down:
+                    outlet_coords.y = corner.y + 1;
+                    break;
+                case left:
+                    outlet_coords.x = corner.x - 1;
+                    break;
+                case right:
+                    outlet_coords.x = corner.x + 1;
+                    break;
+            }
+            if (DEBUG) {
+                printf("[DEBUG] Exit point: %d:%d\n", outlet_coords.x, outlet_coords.y);
+            }
+            if (outlet_coords.x < 0 || outlet_coords.x >= GRID_WIDTH || outlet_coords.y < 0 || outlet_coords.y >= GRID_HEIGHT) {
+                if (DEBUG) {
+                    printf("[DEBUG] Exit point out of bounds\n");
+                }
+                continue;
+            }
+            Node* outlet_node = &nodes[outlet_coords.y * GRID_WIDTH + outlet_coords.x];
+            if (outlet_node->type == obstacle) {
+                if (DEBUG) {
+                    printf("[DEBUG] Exit point is an obstacle\n");
+                }
+                continue;
+            }
+            Node* exit_point = &nodes[corner.y * GRID_WIDTH + corner.x];
+            exit_points[i] = exit_point->coordinates;
+            if (DEBUG) {
+                printf("[DEBUG] Exit point is valid\n");
+            }
+        }
+    }
 }
 
 void distribute_work(Node* nodes, Node* starting_node, Node* destination_node, int n_chunks, int world_rank) {
@@ -82,24 +148,24 @@ void distribute_work(Node* nodes, Node* starting_node, Node* destination_node, i
             printf("%d ", nodes[i].id);
     }
 
-    int n_chunks_per_s = (int) sqrt(n_chunks);
+    int n_chunks_per_side = (int) sqrt(n_chunks);
     int chunk_size = GRID_WIDTH * GRID_HEIGHT;
-    int chunk_s_length = (int) sqrt((double) chunk_size / n_chunks);
-    if (chunk_s_length * chunk_s_length * n_chunks != GRID_WIDTH * GRID_HEIGHT) {
+    int chunk_side_length = (int) sqrt((double) chunk_size / n_chunks);
+    if (chunk_side_length * chunk_side_length * n_chunks != GRID_WIDTH * GRID_HEIGHT) {
         if (world_rank == 0) {
             printf("[ERROR] The total size of the array must be a perfect square multiple of the number of processes.\n");
         }
         MPI_Abort(MPI_COMM_WORLD, 1);
     }
     if (DEBUG && world_rank == 0) {
-        printf("[DEBUG] R0 - chunk_s_length: %d\n", chunk_s_length);
+        printf("[DEBUG] R0 - chunk_side_length: %d\n", chunk_side_length);
         printf("[DEBUG] R0 - n_chunks: %d\n", n_chunks);
     }
 
     int* displacements = malloc(sizeof(int) * n_chunks);
-    for (int j=0; j < n_chunks_per_s; j++) {
-        for (int i=0; i < n_chunks_per_s; i++) {
-            displacements[j * n_chunks_per_s + i] = (j * n_chunks_per_s * chunk_s_length) + i;
+    for (int j=0; j < n_chunks_per_side; j++) {
+        for (int i=0; i < n_chunks_per_side; i++) {
+            displacements[j * n_chunks_per_side + i] = (j * n_chunks_per_side * chunk_side_length) + i;
         }
     }
 
@@ -117,13 +183,13 @@ void distribute_work(Node* nodes, Node* starting_node, Node* destination_node, i
 
     MPI_Datatype node_type = create_node_datatype();
     MPI_Datatype node_vector_type, node_vector_type_resized;
-    MPI_Type_vector(chunk_s_length, chunk_s_length, GRID_WIDTH, node_type, &node_vector_type);
+    MPI_Type_vector(chunk_side_length, chunk_side_length, GRID_WIDTH, node_type, &node_vector_type);
     MPI_Type_commit(&node_vector_type);
-    MPI_Type_create_resized(node_vector_type, 0, chunk_s_length * sizeof(Node), &node_vector_type_resized);
+    MPI_Type_create_resized(node_vector_type, 0, (MPI_Aint) (chunk_side_length * sizeof(Node)), &node_vector_type_resized);
     MPI_Type_commit(&node_vector_type_resized);
 
     // Scatter the data
-    Node* l_nodes = malloc(sizeof(Node) * chunk_s_length * chunk_s_length);
+    Node* l_nodes = malloc(sizeof(Node) * chunk_side_length * chunk_side_length);
     if (MPI_Scatterv(
             nodes,
             send_count,
@@ -143,12 +209,15 @@ void distribute_work(Node* nodes, Node* starting_node, Node* destination_node, i
         printf("Starting point: %d:%d\n", starting_node->coordinates.x, starting_node->coordinates.y);
         for (int i = 0; i < n_chunks; i++) {
             MsgChunkStart msg = {
-                    .chunk_w = chunk_s_length,
-                    .chunk_h = chunk_s_length,
+                    .chunk_w = chunk_side_length,
+                    .chunk_h = chunk_side_length,
                     .starting_point = {starting_node->coordinates.x, starting_node->coordinates.y},
                     .ending_point = {destination_node->coordinates.x, destination_node->coordinates.y},
-                    .exit_points = NULL
+                    .exit_points = {
+                            [0 ... N_EXIT_POINTS_PER_CHUNK-1] = {NULL_COORD, NULL_COORD}
+                    }
             };
+
             if (MPI_Send(&msg, 1, msgStartDatatype, i, 0, MPI_COMM_WORLD)) {
                 printf("[Error]: R0 - Send error\n");
                 exit(1);
@@ -173,16 +242,36 @@ void distribute_work(Node* nodes, Node* starting_node, Node* destination_node, i
         for (int i = 0; i < n_chunks; i++) {
             if (world_rank == i) {
                 printf("Rank %d\n", world_rank);
-                for (int j = 0; j < chunk_s_length; j++) {
-                    for (int k = 0; k < chunk_s_length; k++) {
-                        printf("%d:%d", l_nodes[j * chunk_s_length + k].coordinates.x,
-                               l_nodes[j * chunk_s_length + k].coordinates.y);
+                for (int j = 0; j < chunk_side_length; j++) {
+                    for (int k = 0; k < chunk_side_length; k++) {
+                        printf("%d:%d", l_nodes[j * chunk_side_length + k].coordinates.x,
+                               l_nodes[j * chunk_side_length + k].coordinates.y);
                     }
                     printf("\n");
                 }
                 printf("\n");
             }
             MPI_Barrier(MPI_COMM_WORLD);
+        }
+    }
+
+    if (world_rank == 0) {
+        for (int i = 0; i < n_chunks; i++) {
+            Coordinates initial = {
+                    .x = (displacements[i] % n_chunks_per_side) * chunk_side_length,
+                    .y = (displacements[i] / n_chunks_per_side) * chunk_side_length
+            };
+            if (DEBUG) {
+                printf("[DEBUG] R0 - initial: %d:%d\n", initial.x, initial.y);
+            }
+            find_chunk_corners_exit_points(nodes, chunk_side_length, initial, msg.exit_points);
+            if (DEBUG) {
+                printf("[DEBUG] R0 - exit_points: ");
+                for (int j = 0; j < N_EXIT_POINTS_PER_CHUNK; j++) {
+                    printf("%d:%d ", msg.exit_points[j].x, msg.exit_points[j].y);
+                }
+                printf("\n");
+            }
         }
     }
 
