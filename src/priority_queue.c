@@ -2,142 +2,109 @@
 // Created by Jacopo Clocchiatti on 01/12/22.
 //
 
-// TODO: implement hash into functions + finish update priority
-
-#include "../include/priority_queue.h"
+#include <stdbool.h>
+#import <stdlib.h>
 #include "../include/comm.h"
 
-
-int parent(int i){
-    return (i-1)/2;
+PriorityQueue* createPriorityQueue(int capacity) {
+    PriorityQueue* pq = (PriorityQueue*)malloc(sizeof(PriorityQueue));
+    pq->size = 0;
+    pq->capacity = capacity;
+    pq->nodes = (PriorityQueueNode*)malloc(sizeof(PriorityQueueNode) * capacity);
+    return pq;
 }
 
-int left_child(int i){
-    return (2*i + 1);
-}
+void enqueue(PriorityQueue* pq, Node* node, double priority) {
+    if (pq->size >= pq->capacity) {
+        // Resize the priority queue by increasing its capacity by half
+        int newCapacity = pq->capacity + pq->capacity / 2;
+        PriorityQueueNode* newNodes = (PriorityQueueNode*)malloc(sizeof(PriorityQueueNode) * newCapacity);
 
-int right_child(int i){
-    return(2*i + 2);
-}
+        // Copy existing nodes to the new array
+        for (int i = 0; i < pq->size; i++) {
+            newNodes[i] = pq->nodes[i];
+        }
 
-
-MinHeap* init_minheap() {
-    MinHeap* minheap = (MinHeap*) calloc(1, sizeof(MinHeap));
-    if (minheap == NULL){
-        fprintf(stderr, "Error allocating the minheap");
+        // Free the old nodes array and update the queue's properties
+        free(pq->nodes);
+        pq->nodes = newNodes;
+        pq->capacity = newCapacity;
     }
-    minheap->arr = (Node**) calloc(1, sizeof(Node*));
-    if (minheap->arr == NULL){
-        fprintf(stderr, "Error allocating the minheap array");
-    }
-    minheap->capacity = 1;
-    minheap->used = 0;
-    return minheap;
-}
 
-void free_minheap(MinHeap* heap) {
-    if (!heap)
-        return;
-    free(heap->arr);
-    free(heap);
-}
+    // Create a new PriorityQueueNode
+    PriorityQueueNode newNode;
+    newNode.node = node;
+    newNode.priority = priority;
 
-MinHeap* insert_into_heap(MinHeap* heap, Node* node) {
-    // printf("Inserting %d into minHeap\n", node->id);
-    // Check if we need to resize the array
-    if (heap->used == heap->capacity) {
-        heap->capacity *= 2;
-        heap->arr = (Node**) realloc(heap->arr, heap->capacity * sizeof(Node*));
-    }
-    // We can add it. Increase the used and add it to the end
-    heap->arr[heap->used] = node;
-    heap->used++;
+    // Add the new node to the end of the priority queue
+    pq->nodes[pq->size] = newNode;
+    pq->size++;
 
-    // Keep swapping until we reach the root
-    int curr = heap->used - 1;
-    // As long as you aren't in the root node, and while the
-    // parent of the last element is greater than it
-    // todo: choose if last inserted should be checked before or after the nodes already in the heap
-    while (curr > 0 && heap->arr[parent(curr)]->distance > heap->arr[curr]->distance) {
-        // Swap
-        Node* temp = heap->arr[parent(curr)];
-        heap->arr[parent(curr)] = heap->arr[curr];
-        heap->arr[curr] = temp;
-        // Update the current index of element
-        curr = parent(curr);
-    }
-    return heap;
-}
-
-
-bool is_queue_empty(MinHeap* heap){
-    if (heap->used <= 0){
-        return true;
-    }
-    return false;
-}
-
-Node get_min(MinHeap* heap){
-    return *heap->arr[0];
-}
-
-void heapify(MinHeap* heap, int i) {
-    int smallest = i;
-    int left = 2 * i + 1;
-    int right = 2 * i + 2;
-    // If left child is smaller than root
-    if (left < heap->used && heap->arr[left]->distance < heap->arr[smallest]->distance)
-        smallest = left;
-
-    // If right child is smaller than root
-    if (right < heap->used && heap->arr[right]->distance < heap->arr[smallest]->distance)
-        smallest = right;
-
-    // If root is not smallest, swap with smallest and call heapify again
-    if (smallest != i) {
-        Node *temp = heap->arr[i];
-        heap->arr[i] = heap->arr[smallest];
-        heap->arr[smallest] = temp;
-        heapify(heap, smallest);
-    }
-}
-
-MinHeap* remove_from_heap(MinHeap* heap, Node* node) {
-    // Find the node to remove
-    int i = 0;
-    while (heap->arr[i]->id != node->id){
-        i++;
-    }
-    // Swap the node with the last element
-    heap->arr[i] = heap->arr[heap->used - 1];
-    heap->used--;
-    // Call heapify on the root node
-    heapify(heap, 0);
-    return heap;
-}
-
-Node* pop_min(MinHeap* heap) {
-    Node* min = heap->arr[0];
-    heap->used--;
-    heap->arr[0] = heap->arr[heap->used];
-
-    // Call heapify on root node
-    heapify(heap, 0);
-
-    return min;
-}
-
-// TODO: better find_in_heap alg
-bool find_in_heap(MinHeap* heap, Node* node) {
-    for (int i = 0; i < heap->used; i++){
-        if (heap->arr[i]->id == node->id) {
-            return true;
+    // Bubble up the new node to maintain the heap property
+    int currentIndex = pq->size - 1;
+    while (currentIndex > 0) {
+        int parentIndex = (currentIndex - 1) / 2;
+        if (pq->nodes[currentIndex].priority < pq->nodes[parentIndex].priority) {
+            // Swap nodes if the child's priority is smaller than its parent's
+            PriorityQueueNode temp = pq->nodes[currentIndex];
+            pq->nodes[currentIndex] = pq->nodes[parentIndex];
+            pq->nodes[parentIndex] = temp;
+            currentIndex = parentIndex;
+        } else {
+            break;  // Heap property is maintained
         }
     }
-    return false;
 }
 
-MinHeap* update_priority(MinHeap* heap, Node* node){
-    // todo: update_priority
-    return heap;
+Node* dequeue(PriorityQueue* pq) {
+    if (pq->size == 0) {
+        return NULL;  // Queue is empty
+    }
+
+    // Get the node with the highest priority (at the root of the heap)
+    Node* highestPriorityNode = pq->nodes[0].node;
+
+    // Replace the root node with the last node in the heap
+    pq->nodes[0] = pq->nodes[pq->size - 1];
+    pq->size--;
+
+    // Heapify down to maintain the min-heap property
+    int currentIndex = 0;
+    while (1) {
+        int leftChildIndex = 2 * currentIndex + 1;
+        int rightChildIndex = 2 * currentIndex + 2;
+        int smallestIndex = currentIndex;
+
+        if (leftChildIndex < pq->size && pq->nodes[leftChildIndex].priority < pq->nodes[smallestIndex].priority) {
+            smallestIndex = leftChildIndex;
+        }
+        if (rightChildIndex < pq->size && pq->nodes[rightChildIndex].priority < pq->nodes[smallestIndex].priority) {
+            smallestIndex = rightChildIndex;
+        }
+
+        if (smallestIndex != currentIndex) {
+            // Swap nodes to maintain the min-heap property
+            PriorityQueueNode temp = pq->nodes[currentIndex];
+            pq->nodes[currentIndex] = pq->nodes[smallestIndex];
+            pq->nodes[smallestIndex] = temp;
+            currentIndex = smallestIndex;
+        } else {
+            break;  // Heap property is maintained
+        }
+    }
+
+    return highestPriorityNode;
+}
+
+int isPriorityQueueEmpty(PriorityQueue* pq) {
+    return pq->size == 0;
+}
+
+void destroyPriorityQueue(PriorityQueue* pq) {
+    free(pq->nodes);
+    free(pq);
+}
+
+bool is_same_node(Coordinates a, Coordinates b){
+    return (a.x == b.x && a.y == b.y);
 }
