@@ -1,11 +1,8 @@
-#include <printf.h>
 #include </usr/local/Cellar/mpich/4.1.2/include/mpi.h>
 #include "../include/generic_list.h"
 #include "../include/priority_queue.h"
-#include "../include/compute_distance.h"
-#import "stdlib.h"
 #include "../include/print.h"
-#include "../include/comm.h"
+#include "../include/compute_path.h"
 
 #include </usr/local/Cellar/libomp/16.0.6/include/omp.h>
 #define MAX_EXIT_POINTS 9
@@ -106,134 +103,32 @@ void parallel_finalize() {
 }
 
 
-void updateNodeValues(Node* node, Node* parent, Node* endNode) {
-    // Update the actual distance from the start node
-    // node->normal_distance = parent->normal_distance + compute_total_distance(parent, node);
-
-    // Calculate the heuristic distance using a heuristic function (e.g., Euclidean distance)
-    node->heuristic_distance = compute_heuristic(*node, *endNode);
-}
-
-ChunkPath* compute_path(Node** matrix, int width, int height, Coordinates start, Coordinates end) {
-    // Initialize necessary data structures
-    PriorityQueue* openSet = createPriorityQueue(width * height);
-    int** closedSet = (int**)malloc(height * sizeof(int*));
-    Node*** parentMatrix = (Node***)malloc(height * sizeof(Node**));
-
-    for (int i = 0; i < height; i++) {
-        closedSet[i] = (int*)calloc(width, sizeof(int));
-        parentMatrix[i] = (Node**)malloc(width * sizeof(Node*));
-    }
-
-    // Enqueue the starting node
-    matrix[start.y][start.x].distance = 0.0;
-    matrix[start.y][start.x].heuristic_distance = compute_heuristic(matrix[start.y][start.x], matrix[end.y][end.x]);
-    enqueue(openSet, &matrix[start.y][start.x], matrix[start.y][start.x].heuristic_distance);
-    for (int i = 0; i < width; i++){
-        for (int j= 0; j < height; j++){
-            printf("%d %u %f\t", matrix[i][j].id, matrix[i][j].type, matrix[i][j].distance);
-        }
-        printf("\n");
-    }
-    while (!isPriorityQueueEmpty(openSet)) {
-        for (int i = 0; i < openSet->size; i++){
-            printf("%d ", openSet->nodes[i].node->id);
-        }
-        printf("\n");
-        Node* current = dequeue(openSet);
-        closedSet[current->coordinates.y][current->coordinates.x] = 1;
-
-        // If the end node is reached, construct the path and return
-        if (is_same_node(current->coordinates, end)) {
-            // Construct the path using parentMatrix
-            ChunkPath* path = (ChunkPath*)malloc(sizeof(ChunkPath));
-            path->n_nodes = 0;
-            Node* pathNode = current;
-            while (pathNode != NULL) {
-                path->n_nodes++;
-                pathNode = parentMatrix[pathNode->coordinates.y][pathNode->coordinates.x];
-            }
-            path->nodes = (Coordinates**)malloc(sizeof(Coordinates*) * path->n_nodes);
-            path->exit_points = (Coordinates*)malloc(sizeof(Coordinates));
-            pathNode = current;
-            int index = path->n_nodes - 1;
-            while (pathNode != NULL) {
-                path->nodes[index] = &(pathNode->coordinates);
-                index--;
-                Node* temp = pathNode;
-                pathNode = parentMatrix[pathNode->coordinates.y][pathNode->coordinates.x];
-                if (pathNode != NULL && is_same_node(pathNode->coordinates, end)) {
-                    path->exit_points[0] = pathNode->coordinates;
-                }
-                free(temp);
-            }
-            destroyPriorityQueue(openSet);
-            for (int i = 0; i < height; i++) {
-                free(closedSet[i]);
-                free(parentMatrix[i]);
-            }
-            free(closedSet);
-            free(parentMatrix);
-            for(int i = 0; i < path->n_nodes; i++)
-                printf("%d %d", path->nodes[i]->x, path->nodes[i]->y);
-            return path;
-        }
-
-        // Process neighbors and update openSet
-        for (int dy = -1; dy <= 1; dy++) {
-            for (int dx = -1; dx <= 1; dx++) {
-                if ((dx == dy) || (dx == -1 && dy == +1) || (dx == 1 && dy == -1)){
-                    continue;
-                }
-                int neighborX = current->coordinates.x + dx;
-                int neighborY = current->coordinates.y + dy;
-                if (neighborX >= 0 && neighborX < width && neighborY >= 0 && neighborY < height) {
-                    Node* neighbor = &matrix[neighborY][neighborX];
-                    printf("%d %u\n", neighbor->id, neighbor->type);
-                    if (neighbor->type != obstacle && !closedSet[neighborY][neighborX]) {
-                        printf("Checking distance!\n");
-                        double tentativeDistance = current->distance + compute_heuristic(*current, *neighbor);
-                        printf("%f %f %f %f\n", tentativeDistance, current->distance, compute_heuristic(*current, *neighbor), neighbor->distance);
-                        if (tentativeDistance < neighbor->distance) {
-                            printf("Updating current node!\n");
-                            updateNodeValues(neighbor, current, &matrix[end.y][end.x]);
-                            parentMatrix[neighborY][neighborX] = current;
-                            enqueue(openSet, neighbor, neighbor->distance + neighbor->heuristic_distance);
-                        }
-                    }
-                }
-            }
-        }
-    }
-    printf("priority queue empty!\n");
-    // Cleanup and return NULL if path not found
-    destroyPriorityQueue(openSet);
-    for (int i = 0; i < height; i++) {
-        free(closedSet[i]);
-        free(parentMatrix[i]);
-    }
-    free(closedSet);
-    free(parentMatrix);
-    printf("Returning NULL!\n");
-    return NULL;
-}
-
 MsgChunkEnd* parallel_compute_paths(MsgChunkStart msg){
     MsgChunkEnd* paths_found = malloc(sizeof(MsgChunkEnd));
+    paths_found->num_of_paths = 0;
     paths_found->paths = malloc(MAX_PATH_NUM*sizeof(ChunkPath));
     for (int i = 0; i < MAX_PATH_NUM; i++){
-        paths_found->paths[i] = *(ChunkPath*) NULL;
+        paths_found->paths = (ChunkPath*) NULL;
     }
 
     if (msg.starting_point != NULL && msg.ending_point != NULL){
-        paths_found->paths[0] = *compute_path(msg.matrix, msg.chunk_w, msg.chunk_h, *msg.starting_point, *msg.ending_point);
+        paths_found->paths = compute_path(msg.matrix, msg.chunk_w, msg.chunk_h, *msg.starting_point, *msg.ending_point);
+        if (paths_found != NULL){
+            paths_found->num_of_paths = 1;
+        }
     }
     else if (msg.starting_point != NULL && msg.ending_point == NULL){
 #pragma omp parallel for
         for (int i = 0; i < MAX_EXIT_POINTS; i++){
             if (&msg.exit_points[i] != NULL){
                 ChunkPath* new_path = compute_path(msg.matrix, msg.chunk_w, msg.chunk_h, *msg.starting_point, msg.exit_points[i]);
-                paths_found->paths[i] = *new_path;
+                if (new_path->nodes != NULL){
+#pragma omp critical
+                    {
+                        paths_found->paths[i] = *new_path;
+                        paths_found->num_of_paths += 1;
+                    }
+                }
             }
         }
     }
@@ -242,7 +137,13 @@ MsgChunkEnd* parallel_compute_paths(MsgChunkStart msg){
         for (int i = 0; i < MAX_EXIT_POINTS; i++){
             if (&msg.exit_points[i] != NULL){
                 ChunkPath* new_path = compute_path(msg.matrix, msg.chunk_w, msg.chunk_h, msg.exit_points[i], *msg.ending_point);
-                paths_found->paths[i] = *new_path;
+                if (new_path->nodes != NULL){
+#pragma omp critical
+                    {
+                        paths_found->paths[i] = *new_path;
+                        paths_found->num_of_paths += 1;
+                    }
+                }
             }
         }
     }
@@ -253,14 +154,17 @@ MsgChunkEnd* parallel_compute_paths(MsgChunkStart msg){
 # pragma omp parallel for shared(p, msg, paths_found)
         for (int i = 0; i < MAX_EXIT_POINTS - 1; i++){
             for (int j = i + 1; j < MAX_EXIT_POINTS; j++){
-                if (&msg.exit_points[i] != NULL && &msg.exit_points[j] != NULL && i != j){
-                    ChunkPath* new_path = compute_path(msg.matrix, msg.chunk_w, msg.chunk_h, msg.exit_points[i], msg.exit_points[j]);
+                if (&msg.exit_points[i] != NULL && &msg.exit_points[j] != NULL && i != j) {
+                    ChunkPath *new_path = compute_path(msg.matrix, msg.chunk_w, msg.chunk_h, msg.exit_points[i],
+                                                       msg.exit_points[j]);
+                    if (new_path->nodes != NULL) {
 #pragma omp critical
-                    {
-                        paths_found->paths[p] = *new_path;
+                        {
+                            paths_found->paths[p] = *new_path;
+                            p++;
+                            paths_found->num_of_paths += 1;
+                        }
                     }
-#pragma omp atomic
-                    p++;
                 }
             }
         }

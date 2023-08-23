@@ -8,7 +8,6 @@
 #include <stdbool.h>
 #include "comm.h"
 
-double compute_total_distance();
 double compute_heuristic(Node a, Node b);
 
 
