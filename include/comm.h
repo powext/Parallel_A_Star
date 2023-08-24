@@ -51,7 +51,7 @@ typedef struct MsgChunkStart {
     // Node ** matrix; sent with MPI_scatterv
     int chunk_w, chunk_h;
     Coordinates starting_point, ending_point;
-    Coordinates exit_points[N_EXIT_POINTS_PER_CHUNK]
+    Coordinates exit_points[N_EXIT_POINTS_PER_CHUNK];
 } MsgChunkStart;
 
 
