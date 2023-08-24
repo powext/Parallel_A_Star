@@ -1,10 +1,9 @@
-#include </usr/local/Cellar/mpich/4.1.2/include/mpi.h>
+#include "mpi.h"
 #include "../include/generic_list.h"
 #include "../include/priority_queue.h"
 #include "../include/print.h"
 #include "../include/compute_path.h"
 
-#include </usr/local/Cellar/libomp/16.0.6/include/omp.h>
 #define MAX_EXIT_POINTS 9
 #define MAX_PATH_NUM 72
 
