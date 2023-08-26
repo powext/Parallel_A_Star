@@ -62,6 +62,7 @@ typedef struct MsgChunkStart {
     Coordinates* starting_point;
     Coordinates* ending_point;
     Coordinates* exit_points;
+    int num_exit_points;
 } MsgChunkStart;
 
 
@@ -71,6 +72,7 @@ typedef struct MsgChunkStart {
 typedef struct MsgChunkEnd {
     ChunkPath* paths;
     int num_of_paths;
+    int num_of_valid_paths;
 } MsgChunkEnd;
 
 #endif //PARALLEL_A_STAR_NEW_COMM_H

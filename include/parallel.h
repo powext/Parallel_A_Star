@@ -10,3 +10,4 @@
 
 void parallel_root_init(Node* nodes);
 void parallel_finalize();
+MsgChunkEnd* parallel_compute_paths(MsgChunkStart* msg);

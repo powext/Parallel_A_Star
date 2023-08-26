@@ -4,6 +4,7 @@
 #include <ctype.h>
 #include "../include/compute_path.h"
 #include "../include/compute_distance.h"
+#include "../include/parallel.h"
 
 int HEIGHT = 30;
 int WIDTH = 30;
@@ -35,12 +36,12 @@ void initialize_nodes_from_matrix(char input_matrix[HEIGHT][WIDTH], Node* nodes,
     }
 }
 
-void initialize_nodes_from_file(int size, Node* nodes, Node** starting_node, Node** destination_node) {
-    char filename[100];
-    sprintf(filename, "data/matrix_%d.txt", size);
-    FILE* fp = fopen(filename, "r");
+void initialize_nodes_from_file(char* file, int size, Node* nodes, Node** starting_node, Node** destination_node) {
+    // char filename[100];
+    // sprintf(filename, "data/matrix_%d.txt", size);
+    FILE* fp = fopen(file, "r");
     if (fp == NULL) {
-        printf("[ERROR] Opening %s!\n", filename);
+        printf("[ERROR] Opening %s!\n", file);
         exit(1);
     }
 
@@ -188,11 +189,11 @@ int main(int argc, char** argv) {
     Node* starting_node;
     Node* destination_node;
     Node* nodes;
-
+    int matrix_input_size = -1;
     // file parameter imports data from the data/ directory
     char* filename = look_for_file(argv, argc);
     if (filename != NULL) {
-        int matrix_input_size = look_for_size(argv, argc);
+        matrix_input_size = look_for_size(argv, argc);
         if (matrix_input_size < 1){
             matrix_input_size = find_maze_size(filename);
             if (matrix_input_size < 1){
@@ -201,9 +202,9 @@ int main(int argc, char** argv) {
             }
         }
         HEIGHT = WIDTH = matrix_input_size;
-        printf("[INFO] Taking data from matrix_%d.txt\n", matrix_input_size);
+        printf("[INFO] Taking data from %s\n", filename);
         nodes = malloc(matrix_input_size * matrix_input_size * sizeof(Node));
-        initialize_nodes_from_file(matrix_input_size, nodes, &starting_node, &destination_node);
+        initialize_nodes_from_file(filename, matrix_input_size, nodes, &starting_node, &destination_node);
     } else {
         printf("[INFO] Input to be generated\n");
         int matrix_input_size = look_for_size(argv, argc);
@@ -218,24 +219,45 @@ int main(int argc, char** argv) {
         initialize_nodes_from_matrix(input_matrix, nodes, &starting_node, &destination_node);
     }
 
+    Node** matrix = (Node**)malloc(sizeof(Node*) * HEIGHT);
+    for (int i = 0; i < HEIGHT; i++) {
+        matrix[i] = &nodes[i * WIDTH];
+    }
+    for (int i=0; i<WIDTH; i++){
+        for(int j=0; j<HEIGHT; j++){
+            matrix[i][j].distance = INT16_MAX/2;
+            matrix[i][j].heuristic_distance = compute_heuristic(matrix[i][j], *destination_node);
+        }
+    }
+
     // parallel parameter runs the parallel version of the program instead of the serial one
     if (look_for_mode(argv, argc)) {
         printf("[INFO] Algorithm running in parallel configuration\n");
         // parallel_root_init(nodes);
         // parallel_finalize();
+        MsgChunkStart* msg = malloc(sizeof (MsgChunkStart));
+        msg->chunk_h = matrix_input_size;
+        msg->chunk_w = matrix_input_size;
+        msg->starting_point = &starting_node->coordinates; //
+        msg->ending_point = NULL; //&destination_node->coordinates;
+        msg->matrix = matrix;
+        msg->exit_points = malloc(4*sizeof (Coordinates));
+        msg->exit_points[0].x = 3;
+        msg->exit_points[0].y = 0;
+        msg->exit_points[1].x = 0;
+        msg->exit_points[1].y = 29;
+        msg->exit_points[2].x = 29;
+        msg->exit_points[2].y = 0;
+        msg->exit_points[3].x = 27;
+        msg->exit_points[3].y = 28;
+        msg->num_exit_points = 4;
+        MsgChunkEnd* tmp = parallel_compute_paths(msg);
+        printf("Found path\n");
+        printf("%d %d", tmp->num_of_paths, tmp->num_of_valid_paths);
     } else {
         printf("[INFO] Algorithm running in serial configuration\n");
         printf("[INFO] Creating matrix\n");
-        Node** matrix = (Node**)malloc(sizeof(Node*) * HEIGHT);
-        for (int i = 0; i < HEIGHT; i++) {
-            matrix[i] = &nodes[i * WIDTH];
-        }
-        for (int i=0; i<WIDTH; i++){
-            for(int j=0; j<HEIGHT; j++){
-                matrix[i][j].distance = INT16_MAX/2;
-                matrix[i][j].heuristic_distance = compute_heuristic(matrix[i][j], *destination_node);
-            }
-        }
+
 
         printf("[INFO] Searching for path\n");
         ChunkPath* tmp = compute_path(matrix, WIDTH, HEIGHT, starting_node->coordinates, destination_node->coordinates);

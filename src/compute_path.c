@@ -22,15 +22,23 @@ void updateNodeValues(Node* node, Node* parent, Node* endNode) {
     node->distance = node->normal_distance + node->heuristic_distance;
 }
 
+/* Return ChunkPath in any case, if there is no path the struct
+ * will have n_nodes = 0 and nodes (that is the path) = NULL
+ */
 ChunkPath* compute_path(Node** matrix, int width, int height, Coordinates start, Coordinates end) {
     // Initialize necessary data structures
     PriorityQueue* openSet = createPriorityQueue(width * height);
     int** closedSet = (int**)malloc(height * sizeof(int*));
-    Node*** parentMatrix = (Node***)malloc(height * sizeof(Node**));
+    NullableNode** parentMatrix = (NullableNode**)malloc(height * sizeof(NullableNode**));
 
     for (int i = 0; i < height; i++) {
         closedSet[i] = (int*)calloc(width, sizeof(int));
-        parentMatrix[i] = (Node**)malloc(width * sizeof(Node*));
+        parentMatrix[i] = (NullableNode*)malloc(width * sizeof(NullableNode*));
+    }
+    for (int i = 0; i < height; i++){
+        for(int j = 0; j < width; j++){
+            parentMatrix[j][i].isNull = true;
+        }
     }
 
     // Enqueue the starting node
@@ -49,21 +57,27 @@ ChunkPath* compute_path(Node** matrix, int width, int height, Coordinates start,
             // Construct the path using parentMatrix
             ChunkPath* path = (ChunkPath*)malloc(sizeof(ChunkPath));
             path->n_nodes = 0;
-            Node* pathNode = current;
-            while (pathNode != NULL) {
+            NullableNode* pathNode = malloc(sizeof (NullableNode));
+            pathNode->node = current;
+            pathNode->isNull = false;
+
+            while (!pathNode->isNull) {
                 path->n_nodes++;
-                pathNode = parentMatrix[pathNode->coordinates.y][pathNode->coordinates.x];
+                pathNode = &parentMatrix[pathNode->node->coordinates.y][pathNode->node->coordinates.x];
             }
+
             path->nodes = (Coordinates**)malloc(sizeof(Coordinates*) * path->n_nodes);
             path->exit_points = (Coordinates*)malloc(sizeof(Coordinates));
             path->exit_points[0] = start;
             path->exit_points[1] = end;
-            pathNode = current;
+
+            pathNode->node = current;
+            pathNode->isNull = false;
             int index = path->n_nodes - 1;
-            while (pathNode != NULL) {
-                path->nodes[index] = &(pathNode->coordinates);
+            while (!pathNode->isNull && index >= 0) {
+                path->nodes[index] = &(pathNode->node->coordinates);
                 index--;
-                pathNode = parentMatrix[pathNode->coordinates.y][pathNode->coordinates.x];
+                pathNode = &parentMatrix[pathNode->node->coordinates.y][pathNode->node->coordinates.x];
             }
             destroyPriorityQueue(openSet);
             for (int i = 0; i < height; i++) {
@@ -89,15 +103,16 @@ ChunkPath* compute_path(Node** matrix, int width, int height, Coordinates start,
 
                         double tentativeDistance = current->normal_distance + compute_heuristic(*current, *neighbor);
                         if (tentativeDistance < neighbor->distance) {
-                            printf("Updating current node!\n");
                             updateNodeValues(neighbor, current, &matrix[end.y][end.x]);
-                            parentMatrix[neighborY][neighborX] = current;
-                            enqueue(openSet, neighbor, neighbor->distance + neighbor->heuristic_distance);
+                            parentMatrix[neighborY][neighborX].node = current;
+                            parentMatrix[neighborY][neighborX].isNull = false;
+                            enqueue(openSet, neighbor, neighbor->distance);
                         }
                     }
                 }
             }
         }
+        // print_matrix(parentMatrix, width, height);
     }
 
     // Cleanup and return NULL if path not found
@@ -108,7 +123,6 @@ ChunkPath* compute_path(Node** matrix, int width, int height, Coordinates start,
     }
     free(closedSet);
     free(parentMatrix);
-    printf("Returning NULL!\n");
 
     ChunkPath* returned_path = (ChunkPath*)malloc(sizeof(ChunkPath));
     returned_path->n_nodes = 0;
