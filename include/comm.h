@@ -6,7 +6,7 @@
 #ifndef PARALLEL_A_STAR_NEW_COMM_H
 #define PARALLEL_A_STAR_NEW_COMM_H
 
-#define N_EXIT_POINTS_PER_CHUNK 12 // must be multiple of 4
+#define N_EXIT_POINTS_PER_CHUNK 16 // must be multiple of 4
 #define NULL_COORD -1
 
 typedef struct Coordinates {

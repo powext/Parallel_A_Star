@@ -1,11 +1,12 @@
 #include <tic.h>
 #include "../include/print.h"
+#include "../include/util.h"
 
 extern int GRID_HEIGHT;
 extern int GRID_WIDTH;
 extern int DEBUG;
 
-void find_chunk_corners_exit_points(Node* nodes, int chunk_side_length, Coordinates initial, Coordinates *exit_points) {
+void find_chunk_corners_exit_points(Node *nodes, int chunk_side_length, Coordinates initial, Coordinates *exit_points) {
     enum Direction {
         up, down, left, right
     };
@@ -14,16 +15,23 @@ void find_chunk_corners_exit_points(Node* nodes, int chunk_side_length, Coordina
         enum Direction directions[2];
     };
     struct Angle corners[4] = {
-            {initial, {up, left}},
-            {initial.x + chunk_side_length -1, initial.y, {right, up}},
-            {initial.x + chunk_side_length -1, initial.y + chunk_side_length -1, {down, right}},
-            {initial.x, initial.y + chunk_side_length -1, {left, down}}
+            {initial,                           {up, left}},
+            {initial.x + chunk_side_length - 1, initial.y,                         {up,   right}},
+            {initial.x + chunk_side_length - 1, initial.y + chunk_side_length - 1, {down, right}},
+            {initial.x,                         initial.y + chunk_side_length - 1, {down, left}}
     };
     for (int i = 0; i < 4; i++) {
         Coordinates corner = corners[i].coordinates;
-        enum Direction* directions = corners[i].directions;
+        Node *corner_node = &nodes[corner.y * GRID_WIDTH + corner.x];
+        enum Direction *directions = corners[i].directions;
         if (DEBUG) {
             printf("[DEBUG] Corner: %d:%d\n", corner.x, corner.y);
+        }
+        if (corner_node->type == obstacle) {
+            if (DEBUG) {
+                printf("[DEBUG] Corner is an obstacle\n");
+            }
+            continue;
         }
         for (int j = 0; j < 2; j++) {
             enum Direction direction = directions[j];
@@ -48,20 +56,21 @@ void find_chunk_corners_exit_points(Node* nodes, int chunk_side_length, Coordina
             if (DEBUG) {
                 printf("[DEBUG] Exit point: %d:%d\n", outlet_coords.x, outlet_coords.y);
             }
-            if (outlet_coords.x < 0 || outlet_coords.x >= GRID_WIDTH || outlet_coords.y < 0 || outlet_coords.y >= GRID_HEIGHT) {
+            if (outlet_coords.x < 0 || outlet_coords.x >= GRID_WIDTH || outlet_coords.y < 0 ||
+                outlet_coords.y >= GRID_HEIGHT) {
                 if (DEBUG) {
                     printf("[DEBUG] Exit point out of bounds\n");
                 }
                 continue;
             }
-            Node* outlet_node = &nodes[outlet_coords.y * GRID_WIDTH + outlet_coords.x];
+            Node *outlet_node = &nodes[outlet_coords.y * GRID_WIDTH + outlet_coords.x];
             if (outlet_node->type == obstacle) {
                 if (DEBUG) {
                     printf("[DEBUG] Exit point is an obstacle\n");
                 }
                 continue;
             }
-            Node* exit_point = &nodes[corner.y * GRID_WIDTH + corner.x];
+            Node *exit_point = &nodes[corner.y * GRID_WIDTH + corner.x];
             exit_points[i] = exit_point->coordinates;
             if (DEBUG) {
                 printf("[DEBUG] Exit point is valid\n");
@@ -70,62 +79,66 @@ void find_chunk_corners_exit_points(Node* nodes, int chunk_side_length, Coordina
     }
 }
 
-void find_exit_points_on_vector(Node* nodes, Coordinates *vector, Coordinates* outer_vector, int vector_length, Coordinates *exit_points, int direction) {
-    // debug vectors
+void find_exit_points_on_vector(Node *nodes, Coordinates *vector, Coordinates *outer_vector, int vector_length,
+                                Coordinates *exit_points, int direction) {
     if (DEBUG) {
-        printf("[DEBUG] R0 - vector: ");
+        printf("[DEBUG] R0 - Searching new vector: ");
         for (int i = 0; i < vector_length; i++) {
             printf("%d:%d ", vector[i].x, vector[i].y);
         }
         printf("\n");
-        printf("[DEBUG] R0 - outer_vector: ");
+        printf("[DEBUG] R0 - Searching new outer_vector: ");
         for (int i = 0; i < vector_length; i++) {
             printf("%d:%d ", outer_vector[i].x, outer_vector[i].y);
         }
         printf("\n");
     }
     int N = (N_EXIT_POINTS_PER_CHUNK - 4) / 4;
-    int step = (vector_length - 2) / N; // Exclude the first and last entry
+    int step = (vector_length - 2) / N; // Excludes the first and last entry
 
     for (int i = 1; i <= N; i++) {
-        int index = 1 + (i * step) - (step / 2); // Start from the middle of the step, +1 to skip the first entry
+        int index = 1 + (i * step) - (step / 2);
 
         // Check the middle point first
-        if (nodes[outer_vector->y * GRID_WIDTH + outer_vector->x].type != obstacle
-            && nodes[vector->y * GRID_WIDTH + vector->x].type != obstacle) {
-            exit_points[4 + (direction * N) + (i - 1)] = vector[index];
+        if (nodes[outer_vector[index].y * GRID_WIDTH + outer_vector[index].x].type != obstacle
+            && nodes[vector[index].y * GRID_WIDTH + vector[index].x].type != obstacle) {
+            exit_points[4 + (direction * N) + i - 1] = vector[index];
+            printf("[DEBUG] R0 - side exit point found: %d:%d\n", vector[index].x, vector[index].y);
             continue;
         }
 
         // Searching to the left from the middle
-        int leftIndex = index - 1;
-        while (leftIndex > 1 && nodes[outer_vector->y * GRID_WIDTH + outer_vector->x].type == obstacle) { // > 1 to avoid the first entry
-            leftIndex--;
+        int left_index = index - 1;
+        while (left_index > 1) {
+            if (nodes[outer_vector[left_index].y * GRID_WIDTH + outer_vector[left_index].x].type != obstacle
+                && nodes[vector[left_index].y * GRID_WIDTH + vector[left_index].x].type != obstacle) {
+                exit_points[4 + (direction * N) + i - 1] = vector[left_index];
+                printf("[DEBUG] R0 - side exit point found: %d:%d\n", vector[left_index].x, vector[left_index].y);
+                left_index = 0;  // exit cycle
+            } else {
+                left_index--;
+                continue;
+            }
         }
-
-        // If a valid point is found to the left, add to exit_points
-        if (nodes[outer_vector->y * GRID_WIDTH + outer_vector->x].type != obstacle
-            && nodes[vector->y * GRID_WIDTH + vector->x].type != obstacle) {
-            exit_points[4 + ((direction - 1) * (N - 1)) + i] = vector[leftIndex];
-            continue;
-        }
+        if (left_index == 0) continue;
 
         // If not found in the middle or to the left, searching to the right
-        int rightIndex = index + 1;
-        while (rightIndex < vector_length - 1
-               && (nodes[outer_vector->y * GRID_WIDTH + outer_vector->x].type == obstacle
-                   || nodes[vector->y * GRID_WIDTH + vector->x].type == obstacle)) {
-            rightIndex++;
-        }
-        // If a valid point is found to the right, add to exit_points
-        if (nodes[outer_vector->y * GRID_WIDTH + outer_vector->x].type != obstacle
-            && nodes[vector->y * GRID_WIDTH + vector->x].type != obstacle) {
-            exit_points[4 + ((direction - 1) * (N - 1)) + i] = vector[rightIndex];
+        int right_index = index + 1;
+        while (right_index < vector_length - 1) {
+            if (nodes[outer_vector[right_index].y * GRID_WIDTH + outer_vector[right_index].x].type != obstacle
+                && nodes[vector[right_index].y * GRID_WIDTH + vector[right_index].x].type != obstacle) {
+                exit_points[4 + (direction * N) + i - 1] = vector[right_index];
+                printf("[DEBUG] R0 - side exit point found: %d:%d\n", vector[right_index].x, vector[right_index].y);
+                right_index = vector_length; // exit cycle
+            }
+            else {
+                right_index++;
+            }
         }
     }
 }
 
-void find_chunk_sides_exit_points(Node* nodes, int chunk_side_length, Coordinates initial, Coordinates *exit_points) {
+void find_chunk_sides_exit_points(Node *nodes, int chunk_side_length, Coordinates initial, Coordinates *exit_points) {
     Coordinates vector1a[chunk_side_length];
     Coordinates vector1b[chunk_side_length];
     Coordinates vector2a[chunk_side_length];
@@ -137,7 +150,7 @@ void find_chunk_sides_exit_points(Node* nodes, int chunk_side_length, Coordinate
     // Iterating top and bottom
     if ((initial.y - 1) >= 0) {
         printf("[DEBUG] R0 - ok top\n");
-        for (int i=0; i < chunk_side_length; i++) {
+        for (int i = 0; i < chunk_side_length; i++) {
             vector1a[i] = nodes[initial.y * GRID_WIDTH + initial.x + i].coordinates;
             vector1b[i] = nodes[(initial.y - 1) * GRID_WIDTH + initial.x + i].coordinates;
         }
@@ -148,7 +161,7 @@ void find_chunk_sides_exit_points(Node* nodes, int chunk_side_length, Coordinate
 
     if ((initial.y + chunk_side_length) < GRID_HEIGHT) {
         printf("[DEBUG] R0 - ok bottom\n");
-        for (int i=0; i < chunk_side_length; i++) {
+        for (int i = 0; i < chunk_side_length; i++) {
             vector2a[i] = nodes[(initial.y + chunk_side_length - 1) * GRID_WIDTH + initial.x + i].coordinates;
             vector2b[i] = nodes[(initial.y + chunk_side_length) * GRID_WIDTH + initial.x + i].coordinates;
         }
@@ -161,7 +174,7 @@ void find_chunk_sides_exit_points(Node* nodes, int chunk_side_length, Coordinate
     // Debug
     if ((initial.x - 1) >= 0) {
         printf("[DEBUG] R0 - ok left\n");
-        for (int i=0; i < chunk_side_length; i++) {
+        for (int i = 0; i < chunk_side_length; i++) {
             vector1a[i] = nodes[(initial.y + i) * GRID_WIDTH + initial.x].coordinates;
             vector1b[i] = nodes[(initial.y + i) * GRID_WIDTH + initial.x - 1].coordinates;
         }

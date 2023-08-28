@@ -10,6 +10,7 @@
 #include "../include/print.h"
 #include "../include/parallel.h"
 #include "../include/comm.h"
+#include "../include/parallel_distribution.h"
 
 int GRID_HEIGHT = 30;
 int GRID_WIDTH = 30;
@@ -71,7 +72,7 @@ void initialize_nodes_from_matrix(char input_matrix[GRID_HEIGHT][GRID_WIDTH], No
     }
 }
 
-void initialize_nodes_from_file(char* filename, Node* nodes, Node** starting_node, Node** destination_node) {
+void initialize_nodes_from_file(char* filename, int matrix_size, Node* nodes, Node** starting_node, Node** destination_node) {
     FILE* fp = fopen(filename, "r");
     if (fp == NULL) {
         printf("[ERROR] Opening %s!\n", filename);
@@ -84,6 +85,10 @@ void initialize_nodes_from_file(char* filename, Node* nodes, Node** starting_nod
     while ((curr = fgetc(fp)) != EOF) {
         if (curr == '\n') {
             i++;
+            if (j < matrix_size) {
+                printf("[ERROR] Matrix size specified width is wider than the file rows!\n");
+                exit(1);
+            }
             j = 0;
             continue;
         }
@@ -291,14 +296,7 @@ int find_maze_size(char* filename) {
     return length;
 }
 
-int main(int argc, char** argv) {
-    setbuf(stdout, NULL);
-
-    Node* starting_node;
-    Node* destination_node;
-    Node* nodes;
-
-    // file parameter imports data from the data/ directory
+void generate_or_read_input(int argc, char** argv, Node** nodes, Node** starting_node, Node** destination_node) {
     char* path_filename = look_for_file(argv, argc);
     if (path_filename != NULL) {
         int matrix_input_size = look_for_size(argv, argc);
@@ -311,8 +309,8 @@ int main(int argc, char** argv) {
         }
         GRID_HEIGHT = GRID_WIDTH = matrix_input_size;
         printf("[INFO] Taking data from matrix_%d.txt\n", matrix_input_size);
-        nodes = malloc(matrix_input_size * matrix_input_size * sizeof(Node));
-        initialize_nodes_from_file(path_filename, nodes, &starting_node, &destination_node);
+        *nodes = malloc(matrix_input_size * matrix_input_size * sizeof(Node));
+        initialize_nodes_from_file(path_filename, matrix_input_size, *nodes, starting_node, destination_node);
     } else {
         printf("[INFO] Input to be generated\n");
         int matrix_input_size = look_for_size(argv, argc);
@@ -323,25 +321,40 @@ int main(int argc, char** argv) {
         GRID_HEIGHT = GRID_WIDTH = matrix_input_size;
         char input_matrix[GRID_HEIGHT][GRID_WIDTH];
         generate_input(input_matrix);
-        nodes = malloc(GRID_HEIGHT * GRID_WIDTH * sizeof(Node));
-        initialize_nodes_from_matrix(input_matrix, nodes, &starting_node, &destination_node);
+        *nodes = malloc(GRID_HEIGHT * GRID_WIDTH * sizeof(Node));
+        initialize_nodes_from_matrix(input_matrix, *nodes, starting_node, destination_node);
     }
+}
 
-    // parallel parameter runs the parallel version of the program instead of the serial one
+int main(int argc, char** argv) {
+    setbuf(stdout, NULL);
+
+    Node* starting_node;
+    Node* destination_node;
+    Node* nodes;
+
+    // file parameter imports data from the data/ directory
     PARALLEL = look_for_char_flag(argv, argc, "-parallel");
     DEBUG = look_for_char_flag(argv, argc, "-debug");
+
+    // parallel parameter runs the parallel version of the program instead of the serial one
     if (PARALLEL) {
         printf("[INFO] Algorithm running in parallel configuration\n");
-        parallel_root_init(nodes, starting_node, destination_node);
+        int* n_chunks = malloc(sizeof(int));
+        int* world_rank = malloc(sizeof(int));
+        parallel_init(n_chunks, world_rank);
+        if (*world_rank == 0)
+            generate_or_read_input(argc, argv, &nodes, &starting_node, &destination_node);
+        distribute_work(nodes, starting_node, destination_node, *n_chunks, *world_rank);
         parallel_finalize();
     } else {
         printf("[INFO] Algorithm running in serial configuration\n");
+        generate_or_read_input(argc, argv, &nodes, &starting_node, &destination_node);
         List* arches_list = init_list();
         initialize_arches_list(nodes, arches_list);
-
         search_path(starting_node, destination_node, nodes, arches_list);
     }
-    free(nodes);
+
     return 0;
 }
 
