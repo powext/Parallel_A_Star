@@ -1,0 +1,7 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Parallel" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="-np 4 -wdir $ProjectFileDir$ $ProjectFileDir$/cmake-build-debug/parallel_a_star_new -input $ProjectFileDir$/data/matrix_100.txt -size 100 -parallel -debug" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="parallel_a_star_new" TARGET_NAME="parallel_a_star_new" CONFIG_NAME="Debug" RUN_PATH="/opt/homebrew/bin/mpirun">
+    <method v="2">
+      <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+    </method>
+  </configuration>
+</component>
