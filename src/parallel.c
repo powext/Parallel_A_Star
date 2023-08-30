@@ -107,6 +107,7 @@ void print_paths(MsgChunkEnd* paths){
     printf("Printing paths!\n");
 
     for (int i = 0; i < paths->num_of_paths; i++){
+        printf("[(%d %d) -> (%d %d) = %d] => ", paths->paths[i].exit_points[0].x, paths->paths[i].exit_points[0].y, paths->paths[i].exit_points[1].x, paths->paths[i].exit_points[1].y, paths->paths[i].n_nodes);
         for(int j = 0; j < paths->paths[i].n_nodes; j++){
             printf("(%d %d)\t", paths->paths[i].nodes[j]->x, paths->paths[i].nodes[j]->y);
         }
@@ -120,16 +121,16 @@ void swap(ChunkPath *a, ChunkPath *b) {
     *b = temp;
 }
 
-void sort_paths_by_length(ChunkPath *pathsList, int num_paths, int num_valid_paths) {
-    if(num_valid_paths < 1){
+void sort_paths_by_length(MsgChunkEnd *pathsList) {
+    if(pathsList->num_of_valid_paths < 1){
         return;
     }
-    for (int i = 0; i < num_paths - 1; i++) {
+    for (int i = 0; i < pathsList->num_of_paths - 1; i++) {
         bool swapped = false;
-        for (int j = 0; j < num_paths - i - 1; j++) {
-            if ((pathsList[j].n_nodes == 0 && pathsList[j + 1].n_nodes != 0) ||
-                (pathsList[j].n_nodes > pathsList[j + 1].n_nodes && pathsList[j + 1].n_nodes != 0)) {
-                swap(&pathsList[j], &pathsList[j + 1]);
+        for (int j = 0; j < pathsList->num_of_paths - i - 1; j++) {
+            if ((pathsList->paths[j].n_nodes == 0 && pathsList->paths[j + 1].n_nodes != 0) ||
+                (pathsList->paths[j].n_nodes > pathsList->paths[j + 1].n_nodes && pathsList->paths[j + 1].n_nodes != 0)) {
+                swap(&pathsList->paths[j], &pathsList->paths[j + 1]);
                 swapped = true;
             }
         }
@@ -149,7 +150,25 @@ void sort_paths_by_length(ChunkPath *pathsList, int num_paths, int num_valid_pat
 MsgChunkEnd* parallel_compute_paths(MsgChunkStart* msg){
     MsgChunkEnd* paths_found = malloc(sizeof(MsgChunkEnd));
     paths_found->num_of_paths = 0;
-    int max_paths_num = MAX_EXIT_POINTS*(MAX_EXIT_POINTS-1);
+
+    // PATHS = (from one exit point to all the others) for each exit points
+    //         + from the starting point to each exit points (if starting point is present)
+    //         + from each exit points to the destination point (if destination point is present)
+    //         + from the starting point to the destination point (if both are in the chunk)
+    int total_points_num = msg->num_exit_points;
+    int max_paths_num = msg->num_exit_points*(msg->num_exit_points-1); //MAX_EXIT_POINTS*(MAX_EXIT_POINTS-1);
+    if (msg->starting_point != NULL){
+        max_paths_num += msg->num_exit_points;
+        total_points_num += 1;
+    }
+    if (msg->ending_point != NULL){
+        max_paths_num += msg->num_exit_points;
+        total_points_num += 1;
+    }
+    if (msg->starting_point != NULL && msg->ending_point != NULL){
+        max_paths_num += 1;
+    }
+
     paths_found->paths = malloc(max_paths_num*sizeof(ChunkPath));
     for (int i = 0; i < max_paths_num; i++){
         paths_found->paths[i].nodes = malloc(msg->chunk_w*msg->chunk_h*sizeof (Coordinates));
@@ -157,7 +176,26 @@ MsgChunkEnd* parallel_compute_paths(MsgChunkStart* msg){
         paths_found->paths[i].n_nodes = 0;
     }
 
-    if (msg->starting_point != NULL && msg->ending_point != NULL){
+    Coordinates* total_points = malloc(total_points_num*sizeof(Coordinates));
+    int index = 0;
+    int starting_present = 0;
+    if (msg->starting_point != NULL){
+        total_points[index] = *msg->starting_point;
+        index++;
+        starting_present++;
+    }
+    for (index; index < msg->num_exit_points+starting_present; index++){
+        total_points[index] = msg->exit_points[index-starting_present];
+    }
+    if (msg->ending_point != NULL){
+        total_points[index] = *msg->ending_point;
+    }
+
+    for(int i = 0; i < total_points_num; i++){
+        printf("Exit point %d: (%d %d)\n", i, total_points[i].x, total_points[i].y);
+    }
+
+    /*if (msg->starting_point != NULL && msg->ending_point != NULL){
         printf("Finding path between start and end\n");
         ChunkPath* new_path = compute_path(msg->matrix, msg->chunk_w, msg->chunk_h, *msg->starting_point, *msg->ending_point);
         paths_found->num_of_paths = 1;
@@ -203,33 +241,33 @@ MsgChunkEnd* parallel_compute_paths(MsgChunkStart* msg){
         }
     }
 
-    else if (msg->starting_point == NULL && msg->ending_point == NULL){
-        printf("Finding path between exit points\n");
-        int p = 0;
-# pragma omp parallel for shared(p, msg, paths_found) default(none)
-        for (int i = 0; i < msg->num_exit_points - 1; i++){
-            for (int j = i + 1; j < msg->num_exit_points; j++){
-                if (&msg->exit_points[i] != NULL && &msg->exit_points[j] != NULL && i != j) {
-                    ChunkPath *new_path = compute_path(msg->matrix, msg->chunk_w, msg->chunk_h, msg->exit_points[i],
-                                                       msg->exit_points[j]);
+    else if (msg->starting_point == NULL && msg->ending_point == NULL){*/
+    printf("Finding path between exit points\n");
+    int p = 0;
+# pragma omp parallel for shared(p, msg, paths_found, total_points_num, total_points) default(none)
+    for (int i = 0; i < total_points_num; i++){
+        for (int j = i + 1; j < total_points_num; j++){
+            if (&total_points[i] != NULL && &total_points[j] != NULL && i != j) {
+                ChunkPath *new_path = compute_path(msg->matrix, msg->chunk_w, msg->chunk_h, total_points[i],
+                                                   total_points[j]);
 #pragma omp atomic
-                    paths_found->num_of_paths += 1;
+                paths_found->num_of_paths += 1;
 
-                    if (new_path->n_nodes > 0) {
 #pragma omp critical
-                        {
-                            paths_found->paths[p] = *new_path;
-                            p++;
-                            paths_found->num_of_valid_paths += 1;
-                        }
-                    }
+                {
+                    paths_found->paths[p] = *new_path;
+                    if (new_path->n_nodes > 0)
+                        paths_found->num_of_valid_paths += 1;
+                    p++;
                 }
             }
         }
     }
+//    }
 
-    sort_paths_by_length(paths_found->paths, paths_found->num_of_paths, paths_found->num_of_valid_paths);
+    sort_paths_by_length(paths_found);
     print_paths(paths_found);
+    free(total_points);
     return paths_found;
 }
 
