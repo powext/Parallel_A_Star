@@ -25,8 +25,22 @@ void updateNodeValues(Node* node, Node* parent, Node* endNode) {
 /* Return ChunkPath in any case, if there is no path the struct
  * will have n_nodes = 0 and nodes (that is the path) = NULL
  */
-ChunkPath* compute_path(Node** matrix, int width, int height, Coordinates start, Coordinates end) {
+ChunkPath* compute_path(Node** msg_matrix, int width, int height, Coordinates start, Coordinates end) {
     // Initialize necessary data structures
+    Node** matrix = (Node**)malloc(sizeof(Node*) * height);
+    for (int i = 0; i < height; i++) {
+        matrix[i] = (Node*)malloc(width*sizeof(Node));
+        for (int j = 0; j < width; ++j) {
+            matrix[i][j] = msg_matrix[i][j];
+        }
+    }
+
+    for (int i = 0; i < width; ++i) {
+        for (int j = 0; j < height; ++j) {
+            matrix[i][j].heuristic_distance = compute_heuristic(matrix[i][j], matrix[end.y][end.x]);
+        }
+    }
+
     printf("Finding path between (%d %d) -> (%d %d)\n", start.x, start.y, end.x, end.y);
     PriorityQueue* openSet = createPriorityQueue(width * height);
     int** closedSet = (int**)malloc(height * sizeof(int*));
@@ -34,25 +48,25 @@ ChunkPath* compute_path(Node** matrix, int width, int height, Coordinates start,
 
     for (int i = 0; i < height; i++) {
         closedSet[i] = (int*)calloc(width, sizeof(int));
-        parentMatrix[i] = (NullableNode*)malloc(width * sizeof(NullableNode*));
+        parentMatrix[i] = (NullableNode*)malloc(width * sizeof(NullableNode));
     }
     for (int i = 0; i < height; i++){
         for(int j = 0; j < width; j++){
-            parentMatrix[j][i].isNull = true;
+            parentMatrix[i][j].isNull = true;
         }
     }
 
     // Enqueue the starting node
-    matrix[start.y][start.x].distance = 0.0;
     matrix[start.y][start.x].normal_distance = 0.0;
     matrix[start.y][start.x].heuristic_distance = compute_heuristic(matrix[start.y][start.x], matrix[end.y][end.x]);
+    matrix[start.y][start.x].distance = matrix[start.y][start.x].normal_distance + matrix[start.y][start.x].heuristic_distance;
     enqueue(openSet, &matrix[start.y][start.x], matrix[start.y][start.x].heuristic_distance);
 
     while (!isPriorityQueueEmpty(openSet)) {
 
         Node* current = dequeue(openSet);
         closedSet[current->coordinates.y][current->coordinates.x] = 1;
-        // printf("(%d %d) vs. (%d %d)\n", current->coordinates.x, current->coordinates.y, end.x, end.y);
+
         // If the end node is reached, construct the path and return
         if (is_same_node(current->coordinates, end)) {
             // Construct the path using parentMatrix
@@ -68,7 +82,7 @@ ChunkPath* compute_path(Node** matrix, int width, int height, Coordinates start,
             }
 
             path->nodes = (Coordinates**)malloc(sizeof(Coordinates*) * path->n_nodes);
-            path->exit_points = (Coordinates*)malloc(sizeof(Coordinates));
+            path->exit_points = (Coordinates*)malloc(2*sizeof(Coordinates));
             path->exit_points[0] = start;
             path->exit_points[1] = end;
 
@@ -87,16 +101,15 @@ ChunkPath* compute_path(Node** matrix, int width, int height, Coordinates start,
             }
             free(closedSet);
             free(parentMatrix);
-            printf("%d\n", path->n_nodes);
             return path;
         }
 
         // Process neighbors and update openSet
         for (int dy = -1; dy <= 1; dy++) {
             for (int dx = -1; dx <= 1; dx++) {
-                if ((dx == dy) || (dx == -1 && dy == +1) || (dx == 1 && dy == -1)){
+                if ((dx == dy) || (dx == -1 && dy == +1) || (dx == 1 && dy == -1))
                     continue;
-                }
+
                 int neighborX = current->coordinates.x + dx;
                 int neighborY = current->coordinates.y + dy;
                 if (neighborX >= 0 && neighborX < width && neighborY >= 0 && neighborY < height) {
@@ -114,7 +127,6 @@ ChunkPath* compute_path(Node** matrix, int width, int height, Coordinates start,
                 }
             }
         }
-        // print_matrix(parentMatrix, width, height);
     }
 
     // Cleanup and return NULL if path not found
@@ -130,7 +142,7 @@ ChunkPath* compute_path(Node** matrix, int width, int height, Coordinates start,
     ChunkPath* returned_path = (ChunkPath*)malloc(sizeof(ChunkPath));
     returned_path->n_nodes = 0;
     returned_path->nodes = NULL;
-    returned_path->exit_points = (Coordinates*)malloc(sizeof(Coordinates));
+    returned_path->exit_points = (Coordinates*)malloc(2*sizeof(Coordinates));
     returned_path->exit_points[0] = start;
     returned_path->exit_points[1] = end;
     return returned_path;

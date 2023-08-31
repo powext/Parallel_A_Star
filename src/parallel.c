@@ -115,32 +115,6 @@ void print_paths(MsgChunkEnd* paths){
     }
 }
 
-void swap(ChunkPath *a, ChunkPath *b) {
-    ChunkPath temp = *a;
-    *a = *b;
-    *b = temp;
-}
-
-void sort_paths_by_length(MsgChunkEnd *pathsList) {
-    if(pathsList->num_of_valid_paths < 1){
-        return;
-    }
-    for (int i = 0; i < pathsList->num_of_paths - 1; i++) {
-        bool swapped = false;
-        for (int j = 0; j < pathsList->num_of_paths - i - 1; j++) {
-            if ((pathsList->paths[j].n_nodes == 0 && pathsList->paths[j + 1].n_nodes != 0) ||
-                (pathsList->paths[j].n_nodes > pathsList->paths[j + 1].n_nodes && pathsList->paths[j + 1].n_nodes != 0)) {
-                swap(&pathsList->paths[j], &pathsList->paths[j + 1]);
-                swapped = true;
-            }
-        }
-
-        // If no two elements were swapped by inner loop, the array is already sorted
-        if (!swapped) {
-            break;
-        }
-    }
-}
 
 /* Compute the path using parallelism if it is needed
  * If both start and end point are in the same chunk the path will be one,
@@ -150,6 +124,7 @@ void sort_paths_by_length(MsgChunkEnd *pathsList) {
 MsgChunkEnd* parallel_compute_paths(MsgChunkStart* msg){
     MsgChunkEnd* paths_found = malloc(sizeof(MsgChunkEnd));
     paths_found->num_of_paths = 0;
+    paths_found->num_of_valid_paths = 0;
 
     // PATHS = (from one exit point to all the others) for each exit points
     //         + from the starting point to each exit points (if starting point is present)
@@ -195,53 +170,6 @@ MsgChunkEnd* parallel_compute_paths(MsgChunkStart* msg){
         printf("Exit point %d: (%d %d)\n", i, total_points[i].x, total_points[i].y);
     }
 
-    /*if (msg->starting_point != NULL && msg->ending_point != NULL){
-        printf("Finding path between start and end\n");
-        ChunkPath* new_path = compute_path(msg->matrix, msg->chunk_w, msg->chunk_h, *msg->starting_point, *msg->ending_point);
-        paths_found->num_of_paths = 1;
-        if (new_path->n_nodes > 0){
-            paths_found->paths = new_path;
-            paths_found->num_of_valid_paths = 1;
-        }
-    }
-
-    else if (msg->starting_point != NULL && msg->ending_point == NULL){
-        printf("Finding path between start and exit points\n");
-#pragma omp parallel for shared(msg, paths_found) default(none)
-        for (int i = 0; i < msg->num_exit_points; i++){
-            if (&msg->exit_points[i] != NULL){
-                ChunkPath* new_path = compute_path(msg->matrix, msg->chunk_w, msg->chunk_h, *msg->starting_point, msg->exit_points[i]);
-#pragma omp atomic
-                paths_found->num_of_paths += 1;
-
-                if (new_path->n_nodes > 0){
-                    paths_found->paths[i] = *new_path;
-#pragma omp atomic
-                    paths_found->num_of_valid_paths += 1;
-                }
-            }
-        }
-    }
-
-    else if (msg->starting_point == NULL && msg->ending_point != NULL){
-        printf("Finding path between exit points and end\n");
-# pragma omp parallel for default(none) shared(msg, paths_found)
-        for (int i = 0; i < msg->num_exit_points; i++){
-            if (&msg->exit_points[i] != NULL){
-                ChunkPath* new_path = compute_path(msg->matrix, msg->chunk_w, msg->chunk_h, msg->exit_points[i], *msg->ending_point);
-
-#pragma omp atomic
-                paths_found->num_of_paths += 1;
-                if (new_path->n_nodes > 0){
-                    paths_found->paths[i] = *new_path;
-#pragma omp atomic
-                    paths_found->num_of_valid_paths += 1;
-                }
-            }
-        }
-    }
-
-    else if (msg->starting_point == NULL && msg->ending_point == NULL){*/
     printf("Finding path between exit points\n");
     int p = 0;
 # pragma omp parallel for shared(p, msg, paths_found, total_points_num, total_points) default(none)
@@ -250,11 +178,9 @@ MsgChunkEnd* parallel_compute_paths(MsgChunkStart* msg){
             if (&total_points[i] != NULL && &total_points[j] != NULL && i != j) {
                 ChunkPath *new_path = compute_path(msg->matrix, msg->chunk_w, msg->chunk_h, total_points[i],
                                                    total_points[j]);
-#pragma omp atomic
-                paths_found->num_of_paths += 1;
-
 #pragma omp critical
                 {
+                    paths_found->num_of_paths += 1;
                     paths_found->paths[p] = *new_path;
                     if (new_path->n_nodes > 0)
                         paths_found->num_of_valid_paths += 1;
@@ -263,9 +189,7 @@ MsgChunkEnd* parallel_compute_paths(MsgChunkStart* msg){
             }
         }
     }
-//    }
 
-    sort_paths_by_length(paths_found);
     print_paths(paths_found);
     free(total_points);
     return paths_found;

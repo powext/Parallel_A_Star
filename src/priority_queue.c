@@ -6,6 +6,21 @@
 #import <stdlib.h>
 #include "../include/comm.h"
 
+bool is_same_node(Coordinates a, Coordinates b){
+    return (a.x == b.x && a.y == b.y);
+}
+
+int isAlreadyPresent(PriorityQueue* pq, Node* node){
+    if(pq->size > 0){
+        for (int i = 0; i < pq->size; i++){
+            if(is_same_node(pq->nodes[i].node->coordinates, node->coordinates)){
+                return i;
+            }
+        }
+    }
+    return -1;
+}
+
 PriorityQueue* createPriorityQueue(int capacity) {
     PriorityQueue* pq = (PriorityQueue*)malloc(sizeof(PriorityQueue));
     pq->size = 0;
@@ -31,17 +46,30 @@ void enqueue(PriorityQueue* pq, Node* node, double priority) {
         pq->capacity = newCapacity;
     }
 
-    // Create a new PriorityQueueNode
-    PriorityQueueNode newNode;
-    newNode.node = node;
-    newNode.priority = priority;
+    int currentIndex;
+    int pos;
+    pos = isAlreadyPresent(pq, node);
+    if(pos >= 0){
+        if (pq->nodes[pos].priority > priority){
+            pq->nodes[pos].priority = priority;
+            currentIndex = pos;
+        } else {
+            return;
+        }
+    } else {
+        // Create a new PriorityQueueNode
+        PriorityQueueNode newNode;
+        newNode.node = node;
+        newNode.priority = priority;
 
-    // Add the new node to the end of the priority queue
-    pq->nodes[pq->size] = newNode;
-    pq->size++;
+        // Add the new node to the end of the priority queue
+        pq->nodes[pq->size] = newNode;
+        pq->size++;
 
-    // Bubble up the new node to maintain the heap property
-    int currentIndex = pq->size - 1;
+        // Bubble up the new node to maintain the heap property
+        currentIndex = pq->size - 1;
+    }
+
     while (currentIndex > 0) {
         int parentIndex = (currentIndex - 1) / 2;
         if (pq->nodes[currentIndex].priority < pq->nodes[parentIndex].priority) {
@@ -103,8 +131,4 @@ int isPriorityQueueEmpty(PriorityQueue* pq) {
 void destroyPriorityQueue(PriorityQueue* pq) {
     free(pq->nodes);
     free(pq);
-}
-
-bool is_same_node(Coordinates a, Coordinates b){
-    return (a.x == b.x && a.y == b.y);
 }
