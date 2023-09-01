@@ -4,6 +4,7 @@
 
 #include <stdbool.h>
 #import <stdlib.h>
+#include <printf.h>
 #include "../include/comm.h"
 
 bool is_same_node(Coordinates a, Coordinates b){
@@ -21,18 +22,23 @@ int isAlreadyPresent(PriorityQueue* pq, Node* node){
     return -1;
 }
 
-PriorityQueue* createPriorityQueue(int capacity) {
-    PriorityQueue* pq = (PriorityQueue*)malloc(sizeof(PriorityQueue));
+PriorityQueue* createPriorityQueue(int initial_capacity) {
+    PriorityQueue* pq = (PriorityQueue*) malloc(sizeof(PriorityQueue));
     pq->size = 0;
-    pq->capacity = capacity;
-    pq->nodes = (PriorityQueueNode*)malloc(sizeof(PriorityQueueNode) * capacity);
+    pq->capacity = initial_capacity;
+    pq->nodes = (PriorityQueueNode*) malloc(sizeof(PriorityQueueNode) * pq->capacity);
     return pq;
 }
 
 void enqueue(PriorityQueue* pq, Node* node, double priority) {
+    for (int i = 0; i < pq->size; i++) {
+        if (pq->nodes[i].node == node) {
+            return;
+        }
+    }
+
     if (pq->size >= pq->capacity) {
-        // Resize the priority queue by increasing its capacity by half
-        int newCapacity = pq->capacity + pq->capacity / 2;
+        int newCapacity = pq->capacity * 2;
         PriorityQueueNode* newNodes = (PriorityQueueNode*)malloc(sizeof(PriorityQueueNode) * newCapacity);
 
         // Copy existing nodes to the new array

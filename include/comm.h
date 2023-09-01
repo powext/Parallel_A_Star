@@ -27,9 +27,9 @@ typedef struct ChunkPath {
 typedef enum {start, end, cell, obstacle, visited} NodeType;
 typedef struct Node {
     int id;
+    double score;
     double distance;
-    double normal_distance;
-    double heuristic_distance;
+    double heuristic;
     Coordinates coordinates;
     NodeType type;
 } Node;

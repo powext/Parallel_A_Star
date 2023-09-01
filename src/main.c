@@ -225,8 +225,9 @@ int main(int argc, char** argv) {
     }
     for (int i=0; i<WIDTH; i++){
         for(int j=0; j<HEIGHT; j++){
-            matrix[i][j].distance = INT16_MAX/2;
-            matrix[i][j].heuristic_distance = compute_heuristic(matrix[i][j], *destination_node);
+            matrix[i][j].score = INT16_MAX / 2;
+            matrix[i][j].distance = INT16_MAX / 2;
+            matrix[i][j].heuristic = compute_heuristic(matrix[i][j], *destination_node);
         }
     }
 

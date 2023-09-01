@@ -1,3 +1,4 @@
+#include <string.h>
 #include "mpi.h"
 #include "omp.h"
 #include "../include/generic_list.h"
@@ -6,8 +7,6 @@
 #include "../include/compute_path.h"
 
 #define MAX_EXIT_POINTS 9
-
-
 
 extern int HEIGHT;
 extern int WIDTH;
@@ -18,9 +17,9 @@ MPI_Datatype create_node_datatype() {
     MPI_Aint offsets[7];
 
     offsets[0] = offsetof(Node, id);
-    offsets[1] = offsetof(Node, distance);
-    offsets[2] = offsetof(Node, normal_distance);
-    offsets[3] = offsetof(Node, heuristic_distance);
+    offsets[1] = offsetof(Node, score);
+    offsets[2] = offsetof(Node, distance);
+    offsets[3] = offsetof(Node, heuristic);
     offsets[4] = offsetof(Node, coordinates.x);
     offsets[5] = offsetof(Node, coordinates.y);
     offsets[6] = offsetof(Node, type);
@@ -172,7 +171,7 @@ MsgChunkEnd* parallel_compute_paths(MsgChunkStart* msg){
 
     printf("Finding path between exit points\n");
     int p = 0;
-# pragma omp parallel for shared(p, msg, paths_found, total_points_num, total_points) default(none)
+#pragma omp parallel for shared(p, msg, paths_found, total_points_num, total_points) default(none) collapse(2) num_threads(total_points_num)
     for (int i = 0; i < total_points_num; i++){
         for (int j = i + 1; j < total_points_num; j++){
             if (&total_points[i] != NULL && &total_points[j] != NULL && i != j) {
