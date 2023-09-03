@@ -1,9 +1,10 @@
-#include <string.h>
 #include "mpi.h"
+#include <string.h>
 #include "omp.h"
 #include "../include/generic_list.h"
 #include "../include/priority_queue.h"
 #include "../include/print.h"
+#include "../include/parallel_distribution.h"
 #include "../include/compute_path.h"
 
 #define MAX_EXIT_POINTS 9
@@ -58,44 +59,15 @@ void distribute_work(Node* nodes_old, int n_chunks, int world_rank) {
     MPI_Type_create_subarray(2, sizes, subsizes, starts, MPI_ORDER_C, mpi_contig_node_type, &subarray_type);
     MPI_Type_commit(&subarray_type);
 
-    Node* local_nodes = (Node*)malloc(sizeof(Node) * 10 * 10);
+extern int GRID_HEIGHT;
+extern int GRID_WIDTH;
+extern int DEBUG;
 
-    if (world_rank == 0) {
-        MPI_Send(nodes, 1, subarray_type, 1, 0, MPI_COMM_WORLD);
-    } else if (world_rank == 1) {
-        printf("Rank %d receiving\n", world_rank);
-        MPI_Recv(local_nodes, 1, subarray_type, 0, 0, MPI_COMM_WORLD,
-                 MPI_STATUS_IGNORE);
-        printf("Rank %d received\n", world_rank);
-        for (int i = 0; i < HEIGHT; i++) {
-            for (int j = 0; j < 10; j++) {
-                printf_with_colors(local_nodes[(i * 10) + j]);
-            }
-            printf("\n");
-        }
-        printf("\n");
-    }
-
-    MPI_Type_free(&mpi_node_type);
-    MPI_Type_free(&mpi_contig_node_type);
-    MPI_Type_free(&subarray_type);
-    free(local_nodes);
-}
-
-void parallel_root_init(Node* nodes) {
+void parallel_init(int* n_chunks, int* world_rank) {
     MPI_Init(NULL, NULL);
 
-    int world_size;
-    int world_rank;
-    char processor_name[MPI_MAX_PROCESSOR_NAME];
-    int name_len;
-    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
-    MPI_Get_processor_name(processor_name, &name_len);
-
-    distribute_work(nodes, world_size, world_rank);
-
-    if (world_rank != 0) return;
+    MPI_Comm_size(MPI_COMM_WORLD, n_chunks);
+    MPI_Comm_rank(MPI_COMM_WORLD, world_rank);
 }
 
 void parallel_finalize() {

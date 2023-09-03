@@ -1,3 +1,7 @@
+//
+// Created by Simone Bianchin on 04/02/23.
+//
+
 #ifndef PARALLEL_A_STAR_PRIORITY_QUEUE_H
 #define PARALLEL_A_STAR_PRIORITY_QUEUE_H
 

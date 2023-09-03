@@ -5,15 +5,19 @@
 #include "../include/compute_path.h"
 #include "../include/compute_distance.h"
 #include "../include/parallel.h"
+#include "../include/comm.h"
+#include "../include/parallel_distribution.h"
 
-int HEIGHT = 30;
-int WIDTH = 30;
+int GRID_HEIGHT = 30;
+int GRID_WIDTH = 30;
+int DEBUG = 0;
+int PARALLEL = 0;
 
 void initialize_nodes_from_matrix(char input_matrix[HEIGHT][WIDTH], Node* nodes, Node** starting_node, Node** destination_node) {
     for (int i = 0; i < HEIGHT; i++) {
         for (int j = 0; j < WIDTH; j++) {
             char curr = input_matrix[i][j];
-            int id = (HEIGHT * i) + j;
+            int id = (GRID_HEIGHT * i) + j;
             nodes[id] = (Node){
                     .id = id,
                     .coordinates.x = j,
@@ -51,10 +55,14 @@ void initialize_nodes_from_file(char* file, int size, Node* nodes, Node** starti
     while ((curr = fgetc(fp)) != EOF) {
         if (curr == '\n') {
             i++;
+            if (j < size) {
+                printf("[ERROR] Matrix size specified width is wider than the file rows!\n");
+                exit(1);
+            }
             j = 0;
             continue;
         }
-        int id = (HEIGHT * i) + j;
+        int id = (GRID_HEIGHT * i) + j;
         nodes[id] = (Node){
                 .id = id,
                 .coordinates.x = j,
@@ -66,7 +74,6 @@ void initialize_nodes_from_file(char* file, int size, Node* nodes, Node** starti
         else if (curr == 'S') {
             nodes[id].type = start;
             *starting_node = &nodes[id];
-
         }
         else if (curr == 'E') {
             nodes[id].type = end;
@@ -234,31 +241,15 @@ int main(int argc, char** argv) {
     // parallel parameter runs the parallel version of the program instead of the serial one
     if (look_for_mode(argv, argc)) {
         printf("[INFO] Algorithm running in parallel configuration\n");
-        // parallel_root_init(nodes);
-        // parallel_finalize();
-        MsgChunkStart* msg = malloc(sizeof (MsgChunkStart));
-        msg->chunk_h = matrix_input_size;
-        msg->chunk_w = matrix_input_size;
-        msg->starting_point = &starting_node->coordinates; //
-        msg->ending_point = NULL; //&destination_node->coordinates;
-        msg->matrix = matrix;
-        msg->exit_points = malloc(4*sizeof (Coordinates));
-        msg->exit_points[0].x = 3;
-        msg->exit_points[0].y = 0;
-        msg->exit_points[1].x = 0;
-        msg->exit_points[1].y = 29;
-        msg->exit_points[2].x = 29;
-        msg->exit_points[2].y = 0;
-        msg->exit_points[3].x = 27;
-        msg->exit_points[3].y = 28;
-        msg->num_exit_points = 4;
-        MsgChunkEnd* tmp = parallel_compute_paths(msg);
-        printf("Found path\n");
-        printf("%d %d", tmp->num_of_paths, tmp->num_of_valid_paths);
+        int* n_chunks = malloc(sizeof(int));
+        int* world_rank = malloc(sizeof(int));
+        parallel_init(n_chunks, world_rank);
+        if (*world_rank == 0)
+            generate_or_read_input(argc, argv, &nodes, &starting_node, &destination_node);
+        distribute_work(nodes, starting_node, destination_node, *n_chunks, *world_rank);
+        parallel_finalize();
     } else {
         printf("[INFO] Algorithm running in serial configuration\n");
-        printf("[INFO] Creating matrix\n");
-
 
         printf("[INFO] Searching for path\n");
         ChunkPath* tmp = compute_path(matrix, WIDTH, HEIGHT, starting_node->coordinates, destination_node->coordinates);
@@ -273,7 +264,7 @@ int main(int argc, char** argv) {
             printf("\n");
         }
     }
-    free(nodes);
+
     return 0;
 }
 

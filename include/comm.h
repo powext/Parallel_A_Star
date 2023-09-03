@@ -6,7 +6,8 @@
 #ifndef PARALLEL_A_STAR_NEW_COMM_H
 #define PARALLEL_A_STAR_NEW_COMM_H
 
-#define INT N_EXIT_POINTS_PER_CHUNK = 8 // must be multiple of 4
+#define N_EXIT_POINTS_PER_CHUNK 16 // must be multiple of 4
+#define NULL_COORD -1
 
 typedef struct Coordinates {
     int x;
@@ -16,10 +17,11 @@ typedef struct Coordinates {
 /// Message sent to root rank after computation
 ///
 /// n_nodes indicates the number of nodes of the path, useful to iter the array and for heuristic
-/// exit_points array has a fixed size of 2
+/// nodes are inclusive of entry and exit points
+/// exit_points array has a fixed sides size of 2
 typedef struct ChunkPath {
     int n_nodes;
-    Coordinates **nodes;
+    Coordinates* nodes;
     Coordinates* exit_points;
 } ChunkPath;
 
@@ -55,14 +57,12 @@ typedef struct PriorityQueue {
 /// This Node **matrix would have chunk_w=4 and chunk_h=3
 ///
 /// starting_point and ending_point could be NULL if not present in the local chunk
-/// exit_points array has a fixed size {N_EXIT_POINTS_PER_CHUNK}, some entries could be NULL
+/// exit_points array has a fixed size {N_EXIT_POINTS_PER_CHUNK}, some entries could be NULL_COORD
 typedef struct MsgChunkStart {
-    Node ** matrix;
+    // Node ** matrix; sent with MPI_scatterv
     int chunk_w, chunk_h;
-    Coordinates* starting_point;
-    Coordinates* ending_point;
-    Coordinates* exit_points;
-    int num_exit_points;
+    Coordinates starting_point, ending_point;
+    Coordinates exit_points[N_EXIT_POINTS_PER_CHUNK];
 } MsgChunkStart;
 
 

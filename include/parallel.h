@@ -8,6 +8,6 @@
 #endif //PARALLEL_A_STAR_NEW_PARALLEL_H
 #include "comm.h"
 
-void parallel_root_init(Node* nodes);
+void parallel_init(int* n_chunks, int* world_rank);
 void parallel_finalize();
 MsgChunkEnd* parallel_compute_paths(MsgChunkStart* msg);

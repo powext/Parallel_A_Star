@@ -36,3 +36,4 @@ target_link_libraries(parallel_a_star_new PRIVATE MPI::MPI_C)
 target_link_libraries(parallel_a_star_new PRIVATE "${OPENMP_LIBRARIES}/libomp.dylib")
 
 
+target_link_libraries(parallel_a_star_new PRIVATE "${OPENMP_LIBRARIES}/libomp.dylib")
