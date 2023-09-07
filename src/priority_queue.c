@@ -3,7 +3,7 @@
 //
 
 #include <stdbool.h>
-#import <stdlib.h>
+#include <stdlib.h>
 #include <printf.h>
 #include "../include/comm.h"
 

@@ -6,7 +6,6 @@
 #define PARALLEL_A_STAR_PRIORITY_QUEUE_H
 
 #include <stdbool.h>
-#include "hash_table.h"
 #include "comm.h"
 #include <malloc/_malloc.h>
 #include <stddef.h>

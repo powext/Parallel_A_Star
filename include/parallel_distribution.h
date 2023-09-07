@@ -3,7 +3,7 @@
 #include <tic.h>
 #include <unistd.h>
 #include "mpi.h"
-#import "stdlib.h"
+#include <stdlib.h>
 #include "../include/print.h"
 #include "../include/comm.h"
 #include "omp.h"
@@ -17,6 +17,7 @@
 
 void distribute_work(
         Node* nodes,
+        int size,
         Node* starting_node,
         Node* destination_node,
         int n_chunks,

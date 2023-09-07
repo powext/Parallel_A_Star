@@ -7,8 +7,8 @@
 #include "../include/json_output.h"
 #include "../include/cJSON.h"
 
-extern int GRID_HEIGHT;
-extern int GRID_WIDTH;
+// extern int GRID_HEIGHT;
+// extern int GRID_WIDTH;
 
 void writeOutputToFile(cJSON *json_object) {
     struct stat st = {0};
@@ -96,16 +96,16 @@ char *createCompactMatrixOutput(Node *matrix, int size) {
     return output;
 }
 
-void output_json(Node *nodes, Node *starting_node, Node *destination_node, MsgChunkStart *start_messages, int world_rank,
+void output_json(Node *nodes, int size, Node *starting_node, Node *destination_node, MsgChunkStart *start_messages, int world_rank,
             int n_chunks) {
     if (world_rank != 0) return;
 
     cJSON *root = cJSON_CreateObject();
 
     cJSON_AddItemToObject(root, "n_chunks", cJSON_CreateNumber(n_chunks));
-    cJSON_AddItemToObject(root, "grid_size", cJSON_CreateNumber(GRID_WIDTH));
+    cJSON_AddItemToObject(root, "grid_size", cJSON_CreateNumber(size));
     cJSON_AddItemToObject(root, "obstacles",
-                          cJSON_CreateString(createCompactMatrixOutput(nodes, GRID_WIDTH * GRID_WIDTH)));
+                          cJSON_CreateString(createCompactMatrixOutput(nodes, size * size)));
 
     cJSON *chunk_info = cJSON_CreateArray();
     for (int i = 0; i < n_chunks; i++) {
