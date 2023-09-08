@@ -6,7 +6,7 @@
 #ifndef PARALLEL_A_STAR_NEW_COMM_H
 #define PARALLEL_A_STAR_NEW_COMM_H
 
-#define N_EXIT_POINTS_PER_CHUNK 16 // must be multiple of 4
+#define N_EXIT_POINTS_PER_CHUNK 12 // must be multiple of 4
 #define NULL_COORD -1
 
 typedef struct Coordinates {
@@ -72,9 +72,8 @@ typedef struct MsgChunkStart {
 ///
 /// paths array has a fixed size {N_EXIT_POINTS_PER_CHUNK}, some entries could be NULL
 typedef struct MsgChunkEnd {
-    int num_of_paths;
-    int num_of_valid_paths;
     ChunkPath* paths;
+    int num_of_paths;
 } MsgChunkEnd;
 
 #endif //PARALLEL_A_STAR_NEW_COMM_H

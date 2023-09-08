@@ -31,6 +31,17 @@ for i, chunk in enumerate(data["chunks"]):
         if exit_point != -1:
             draw.rectangle([(exit_point[0], exit_point[1]), (exit_point[0], exit_point[1])], fill=(255, 0, 0, 200))
 
+# Draw staring and destination points
+def get_coordinates(point_str):
+    x, y = map(int, point_str.split(","))
+    return (x, y)
+
+starting_point = get_coordinates(data["starting_point"])
+destination_point = get_coordinates(data["destination_point"])
+
+draw.rectangle([starting_point, starting_point], fill=(0, 255, 0, 200))
+draw.rectangle([destination_point, destination_point], fill=(0, 0, 255, 200))
+
+
 # Save the image
 img.save('output/game_matrix.png')
-img.show()

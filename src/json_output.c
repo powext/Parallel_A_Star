@@ -67,6 +67,7 @@ char *createCompactMatrixOutput(Node *matrix, int size) {
         perror("Failed to allocate memory for output string");
         exit(1);
     }
+    output[0] = '\0';
 
     for (int i = 0; i < size; i++) {
         if (matrix[i].type == obstacle) {
@@ -106,6 +107,17 @@ void output_json(Node *nodes, int size, Node *starting_node, Node *destination_n
     cJSON_AddItemToObject(root, "grid_size", cJSON_CreateNumber(size));
     cJSON_AddItemToObject(root, "obstacles",
                           cJSON_CreateString(createCompactMatrixOutput(nodes, size * size)));
+
+    // print destination_node coordinates
+    printf("[DEBUG] R%d - destination_node: %d:%d\n", world_rank, destination_node->coordinates.x,
+           destination_node->coordinates.y);
+
+    char *starting_point_flattened = malloc(sizeof(char) * (GRID_WIDTH * 2) + 1);
+    sprintf(starting_point_flattened, "%d,%d", starting_node->coordinates.x, starting_node->coordinates.y);
+    cJSON_AddItemToObject(root, "starting_point", cJSON_CreateString(starting_point_flattened));
+    char *ending_point_flattened = malloc(sizeof(char) * (GRID_WIDTH * 2) + 1);
+    sprintf(ending_point_flattened, "%d,%d", destination_node->coordinates.x, destination_node->coordinates.y);
+    cJSON_AddItemToObject(root, "destination_point", cJSON_CreateString(ending_point_flattened));
 
     cJSON *chunk_info = cJSON_CreateArray();
     for (int i = 0; i < n_chunks; i++) {

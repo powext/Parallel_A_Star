@@ -4,6 +4,7 @@
 #include "../include/utility.h"
 #include "../include/json_output.h"
 #include "../include/parallel_paths.h"
+#include "../include/parallel_collection.h"
 
 extern int DEBUG;
 extern int DEBUG_PROCESS;
@@ -307,38 +308,23 @@ void distribute_work(Node *nodes, int size, Node *starting_node, Node *destinati
 
     MsgChunkEnd* computed_paths = parallel_compute_paths(msg, l_nodes, size, world_rank);
     printf_debug("Found %d paths/%d valid\n", computed_paths->num_of_paths, computed_paths->num_of_valid_paths);
+    /// TODO: Implement chunks computing
+    MsgChunkEnd* msgChunkEnd = get_dummy_endmsg(world_rank);
 
-    MPI_Datatype msgEndDatatype = create_MsgEnd_datatype(chunk_side_length);
+    MsgChunkEnd *receivedMsgs = collect_msgs_end(msgChunkEnd, world_rank, n_chunks);
 
-    MsgChunkEnd *paths_lists_complete = malloc(sizeof(MsgChunkEnd) * n_chunks);
+    output_json(nodes, starting_node, destination_node, messages, world_rank, n_chunks);
 
-    if(world_rank == 0) {
-        paths_lists_complete[0] = *computed_paths;
-    }
-
-    printf_debug("Communicating results to main process\n");
-    MPI_Barrier(MPI_COMM_WORLD);
-    if(world_rank == 0){
-        for (int i = 1; i < n_chunks; i++) {
-            //MsgChunkEnd* buf;
-            MPI_Recv(&paths_lists_complete[i], 1, msgEndDatatype, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            // paths_lists_complete[i] = *buf;
-            printf_debug("Received chunk paths %d", i);
-        }
-
-        for (int i = 0; i < n_chunks; ++i) {
-            printf_debug("[%d] = %d/%d ", i, paths_lists_complete[i].num_of_paths, paths_lists_complete[i].num_of_valid_paths);
-        }
-    } else {
-        printf_debug("Sending computed paths!\n");
-        MPI_Send(computed_paths, 1, msgEndDatatype, 0, 0, MPI_COMM_WORLD);
-    }
-
-    // output_json(nodes, size, starting_node, destination_node, messages, world_rank, n_chunks);
     if (world_rank == 0) {
-        free(displacements);
-        free(messages);
+        for (int i = 0; i < n_chunks; i++) {
+            for (int j = 0; j < receivedMsgs[i].num_of_paths; j++) {
+                free(receivedMsgs[i].paths[j].nodes);
+                free(receivedMsgs[i].paths[j].exit_points);
+            }
+            free(receivedMsgs[i].paths);
+        }
     }
+    free(receivedMsgs);
     free(l_nodes);
     MPI_Type_free(&msgStartDatatype);
     MPI_Type_free(&msgEndDatatype);
