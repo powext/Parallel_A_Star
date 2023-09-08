@@ -279,10 +279,10 @@ int main(int argc, char** argv) {
         MPI_Barrier(MPI_COMM_WORLD);
         if(*world_rank == 0){
             current_time = MPI_Wtime()-current_time;
+            printf("Time: %2fs", current_time);
         }
         MPI_Barrier(MPI_COMM_WORLD);
         parallel_finalize();
-        printf("Time: %2f", current_time);
     } else {
         printf("[INFO] Algorithm running in serial configuration\n");
 
@@ -308,7 +308,7 @@ int main(int argc, char** argv) {
 
         clock_t start_time = clock();
         printf("[INFO] Searching for path\n");
-        ChunkPath* tmp = compute_path(matrix, matrix_input_size, matrix_input_size, starting_node->coordinates, destination_node->coordinates);
+        ChunkPath* tmp = compute_path(matrix, matrix_input_size, matrix_input_size, starting_node->coordinates, destination_node->coordinates, 0, 0);
 
         if(tmp->n_nodes > 0){
             clock_t end_time = clock();

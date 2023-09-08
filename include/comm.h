@@ -59,12 +59,12 @@ typedef struct PriorityQueue {
 /// starting_point and ending_point could be NULL if not present in the local chunk
 /// exit_points array has a fixed size {N_EXIT_POINTS_PER_CHUNK}, some entries could be NULL_COORD
 typedef struct MsgChunkStart {
-    Node * nodes; // sent with MPI_scatterv
+    // Node * nodes; // sent with MPI_scatterv
     int chunk_w, chunk_h;
-    Coordinates* starting_point;
-    Coordinates* ending_point;
-    Coordinates exit_points[N_EXIT_POINTS_PER_CHUNK];
+    Coordinates starting_point;
+    Coordinates ending_point;
     int num_exit_points;
+    Coordinates exit_points[N_EXIT_POINTS_PER_CHUNK];
 } MsgChunkStart;
 
 

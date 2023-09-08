@@ -8,6 +8,7 @@
 #include "../include/priority_queue.h"
 
 #define EDGE_WEIGHT 1
+extern int DEBUG;
 
 void updateNodeValues(Node* node, Node* parent, Node* endNode) {
     node->distance = parent->distance + EDGE_WEIGHT;
@@ -16,16 +17,25 @@ void updateNodeValues(Node* node, Node* parent, Node* endNode) {
 
     node->score = node->distance + node->heuristic;
 }
-
+void print_coords(Coordinates coords){
+    printf("(%d:%d) ", coords.x, coords.y);
+}
 /* Return ChunkPath in any case, if there is no path the struct
  * will have n_nodes = 0 and nodes (that is the path) = NULL
  */
-ChunkPath* compute_path(Node* msg_matrix, int width, int height, Coordinates start, Coordinates end) {
+ChunkPath* compute_path(Node* msg_matrix, int width, int height, Coordinates start, Coordinates end, int rank, int thread) {
+    if (DEBUG){
+        printf("[DEBUG][PROCESS %d][THREAD %d] Start:", rank, thread);
+        print_coords(start);
+        printf("End: ");
+        print_coords(end);
+        printf("\n");
+    }
     Node** matrix = (Node**)malloc(sizeof(Node*) * height);
     for (int i = 0; i < height; i++) {
         matrix[i] = (Node*)malloc(width*sizeof(Node));
         for (int j = 0; j < width; ++j) {
-            matrix[i][j] = msg_matrix[i*width+j];
+            matrix[i][j] = msg_matrix[i*width + j];
         }
     }
     Node* starting_node = &matrix[start.y][start.x];

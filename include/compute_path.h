@@ -15,6 +15,6 @@ typedef struct NullableNode{
 } NullableNode;
 
 void updateNodeValues(Node* node, Node* parent, Node* endNode);
-ChunkPath* compute_path(Node* matrix, int width, int height, Coordinates start, Coordinates end);
+ChunkPath* compute_path(Node* matrix, int width, int height, Coordinates start, Coordinates end, int rank, int thread);
 
 #endif //PARALLEL_A_STAR_NEW_COMPUTE_PATH_H
