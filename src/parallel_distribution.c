@@ -6,6 +6,7 @@
 #include "../include/parallel_paths.h"
 
 extern int DEBUG;
+extern int DEBUG_PROCESS;
 
 MPI_Datatype create_coordinates_datatype() {
     MPI_Datatype CoordType;
@@ -69,38 +70,12 @@ MPI_Datatype create_MsgStart_datatype() {
 
 }
 
-bool is_point_contained(Node* nodes, Coordinates* point, int size){
-    int chunk_size = size*size;
-    if (DEBUG)
-        printf("[DEBUG] Computing id!\n");
-    int point_id = point->x*size+point->y;
-
-    int left = 0;
-    int right = chunk_size - 1;
-
-    while (left <= right || (point_id <= nodes[right].id && point_id >= nodes[left].id)) {
-        int mid = left + (right - left) / 2;
-
-        if (DEBUG){
-            printf("[DEBUG] Compare id of point  with node[%d] id!", mid);
-            printf("(%d->%d)\n", point_id, nodes[mid].id);
-        }
-        // Check if the target is at the middle position
-        if (nodes[mid].id == point_id) {
-            if(DEBUG)
-                printf("[DEBUG] FOUND IT!");
-            return true;
-        }
-        // If the target is greater, ignore the left half
-        if (nodes[mid].id < point_id) {
-            left = mid + 1;
-        } else {
-            right = mid - 1;
-        }
+bool is_point_contained(Node* l_nodes, int chunk_side_length, Coordinates* point){
+    Coordinates initial = l_nodes[0].coordinates;
+    if (point->x < initial.x || point->x >= initial.x + chunk_side_length || point->y < initial.y || point->y >= initial.y + chunk_side_length){
+        return false;
     }
-    if(DEBUG)
-        printf("[DEBUG] NOT FOUND IT, F**K!");
-    return false;
+    return true;
 }
 
 void distribute_work(Node *nodes, int size, Node *starting_node, Node *destination_node, int n_chunks, int world_rank) {
@@ -111,14 +86,14 @@ void distribute_work(Node *nodes, int size, Node *starting_node, Node *destinati
     MPI_Datatype node_vector_type, node_vector_type_resized;
     if (world_rank == 0) {
         if(DEBUG)
-            printf("[DEBUG][PROCESS %d] Matrix dimension: %d\n", world_rank, size);
+            printf_debug("Matrix dimension: %d\n", size);
 
         if (sqrt(n_chunks) != (int) sqrt(n_chunks)) {
-            printf("[ERROR][PROCESS %d] The number of processes must be a perfect square.\n", world_rank);
+            printf_debug("The number of processes must be a perfect square.\n");
             MPI_Abort(MPI_COMM_WORLD, 1);
         }
         if (size * size % n_chunks != 0) {
-            printf("[ERROR][PROCESS %d] The total size of the array must be a multiple of the number of processes.\n", world_rank);
+            printf_debug("The total size of the array must be a multiple of the number of processes.\n");
             MPI_Abort(MPI_COMM_WORLD, 1);
         }
 
@@ -126,12 +101,12 @@ void distribute_work(Node *nodes, int size, Node *starting_node, Node *destinati
         chunk_size = size * size;
         chunk_side_length = (int) sqrt((double) chunk_size / n_chunks);
         if (chunk_side_length * chunk_side_length * n_chunks != size * size) {
-            printf("[ERROR][PROCESS %d] The total size of the array must be a perfect square multiple of the number of processes.\n", world_rank);
+            printf_debug("The total size of the array must be a perfect square multiple of the number of processes.\n");
             MPI_Abort(MPI_COMM_WORLD, 1);
         }
         if (DEBUG) {
-            printf("[DEBUG][PROCESS 0] Chunk_side_length: %d\n", chunk_side_length);
-            printf("[DEBUG][PROCESS 0] N_chunks: %d\n", n_chunks);
+            printf_debug("Chunk_side_length: %d\n", chunk_side_length);
+            printf_debug("N_chunks: %d\n", n_chunks);
         }
 
         displacements = malloc(sizeof(int) * n_chunks);
@@ -142,11 +117,13 @@ void distribute_work(Node *nodes, int size, Node *starting_node, Node *destinati
         }
 
         if (DEBUG) {
-            printf("[DEBUG][PROCESS 0] Displacements: ");
+            printf_debug("Displacements: ");
             for (int i = 0; i < n_chunks; i++) {
+                if (!DEBUG) continue;
+                if (DEBUG_PROCESS > 0 && DEBUG_PROCESS != world_rank) continue;
                 printf("%d ", displacements[i]);
             }
-            printf("\n");
+            printf_debug("\n");
         }
 
         send_count = malloc(sizeof(int) * n_chunks);
@@ -180,16 +157,14 @@ void distribute_work(Node *nodes, int size, Node *starting_node, Node *destinati
             node_type,
             0,
             MPI_COMM_WORLD)) {
-        printf("[ERROR][PROCESS %d]: Scatter error\n", world_rank);
+        printf_debug("Scatter error\n");
         exit(1);
     }
 
-    if (DEBUG)
-        printf("[DEBUG][PROCESS %d] Creating MsgStart Datatype!\n", world_rank);
+    printf_debug("Creating MsgStart Datatype!\n");
     MPI_Datatype msgStartDatatype = create_MsgStart_datatype();
 
-    if (DEBUG)
-        printf("[DEBUG][PROCESS %d] Allocating MsgStart!\n", world_rank);
+    printf_debug("Allocating MsgStart!\n");
     MsgChunkStart *messages = malloc(sizeof(MsgChunkStart) * n_chunks);
     MPI_Barrier(MPI_COMM_WORLD);
 
@@ -197,8 +172,7 @@ void distribute_work(Node *nodes, int size, Node *starting_node, Node *destinati
 #pragma omp parallel for shared(chunk_side_length, nodes)
         for (int i = 0; i < n_chunks; i++) {
 
-            if (DEBUG)
-                printf("[DEBUG][PROCESS %d] Creating msg %d", world_rank, i);
+            printf_debug("Creating msg %d\n", i);
             MsgChunkStart local_msg = {
                     .chunk_w = chunk_side_length,
                     .chunk_h = chunk_side_length,
@@ -221,16 +195,15 @@ void distribute_work(Node *nodes, int size, Node *starting_node, Node *destinati
                 local_msg.num_exit_points += find_chunk_sides_exit_points(world_rank, nodes, size, chunk_side_length,
                                                                           initial, local_msg.exit_points);
 
-                if (DEBUG)
-                    printf("[DEBUG][PROCESS %d][THREAD %d] Number of exit points: %d\n", world_rank,
+                printf_debug("[THREAD %d] Number of exit points: %d\n",
                            omp_get_thread_num(), local_msg.num_exit_points);
 
                 if (DEBUG) {
-                    printf("[DEBUG][PROCESS %d][THREAD %d] Exit_points: ", world_rank, omp_get_thread_num());
+                    printf_debug("[THREAD %d] Exit_points: ", omp_get_thread_num());
                     for (int j = 0; j < N_EXIT_POINTS_PER_CHUNK; j++) {
-                        printf("%d:%d ", local_msg.exit_points[j].x, local_msg.exit_points[j].y);
+                        printf_debug("%d:%d ", local_msg.exit_points[j].x, local_msg.exit_points[j].y);
                     }
-                    printf("\n");
+                    printf_debug("\n");
                 }
             }
 
@@ -239,7 +212,6 @@ void distribute_work(Node *nodes, int size, Node *starting_node, Node *destinati
         MPI_Type_free(&node_type);
         MPI_Type_free(&node_vector_type);
         MPI_Type_free(&node_vector_type_resized);
-        free(displacements);
         free(send_count);
 
     }
@@ -247,49 +219,51 @@ void distribute_work(Node *nodes, int size, Node *starting_node, Node *destinati
     MsgChunkStart* msg = malloc(sizeof(MsgChunkStart));
 
     MPI_Barrier(MPI_COMM_WORLD);
-    if(world_rank == 0){
-
+    if (world_rank == 0) {
         for (int i = 1; i < n_chunks; ++i) {
             if (DEBUG)
-                printf("[DEBUG][PROCESS %d] Sending Message %d\n", world_rank, i);
+                printf_debug("Sending Message %d\n", i);
             if (MPI_Send(&messages[i], 1, msgStartDatatype, i, 0, MPI_COMM_WORLD)) {
-                printf("[ERROR][PROCESS 0] Send error\n");
+                printf_debug("[Send error\n");
                 exit(1);
             }
         }
         if (DEBUG)
-            printf("[DEBUG][PROCESS %d] Assigning Message 0\n", world_rank);
+            printf_debug("Assigning Message 0\n");
         msg = &messages[0];
-        if (!is_point_contained(l_nodes, &msg->starting_point, chunk_side_length)){
+        if (!is_point_contained(l_nodes, chunk_side_length, &msg->starting_point)){
             msg->starting_point = (Coordinates){.x = -1, .y = -1};
-        }if (!is_point_contained(l_nodes, &msg->ending_point, chunk_side_length)){
+        } if (!is_point_contained(l_nodes,chunk_side_length, &msg->ending_point)){
             msg->ending_point = (Coordinates){.x = -1, .y = -1};
         }
     } else {
         if (DEBUG)
-            printf("[DEBUG][PROCESS %d] Receiving Messages\n", world_rank);
+            printf_debug("Receiving Messages\n");
 
         if (MPI_Recv(msg, 1, msgStartDatatype, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE)) {
-            printf("[ERROR][PROCESS %d] Recv error\n", world_rank);
+            printf_debug("Recv error\n");
             exit(1);
         }
-        if (!is_point_contained(l_nodes, &msg->starting_point, chunk_side_length)){
+        if (!is_point_contained(l_nodes, chunk_side_length, &msg->starting_point)){
             msg->starting_point = (Coordinates){.x = -1, .y = -1};
-        }if (!is_point_contained(l_nodes, &msg->ending_point, chunk_side_length)){
+        } if (!is_point_contained(l_nodes, chunk_side_length, &msg->ending_point)){
             msg->ending_point = (Coordinates){.x = -1, .y = -1};
         }
         if (DEBUG) {
-            printf("[DEBUG][PROCESS %d] Received Messages\n", world_rank);
-            printf("[DEBUG][PROCESS %d]Start: (%d:%d)\n", world_rank, msg->starting_point.x, msg->starting_point.y);
-            printf("[DEBUG][PROCESS %d]End: (%d:%d)\n", world_rank, msg->ending_point.x, msg->ending_point.y);
+            printf_debug("Received Messages\n");
+            printf_debug("Start: (%d:%d)\n", msg->starting_point.x, msg->starting_point.y);
+            printf_debug("End: (%d:%d)\n", msg->ending_point.x, msg->ending_point.y);
         }
     }
 
     MsgChunkEnd* computed_paths = parallel_compute_paths(msg, l_nodes, size, world_rank);
-    if (DEBUG)
-        printf("[DEBUG][PROCESS %d] Found %d paths/%d valid\n", world_rank, computed_paths->num_of_valid_paths, computed_paths->num_of_paths);
+    printf_debug("Found %d paths/%d valid\n", computed_paths->num_of_valid_paths, computed_paths->num_of_paths);
 
     // output_json(nodes, size, starting_node, destination_node, messages, world_rank, n_chunks);
+    if (world_rank == 0) {
+        free(displacements);
+        free(messages);
+    }
     free(l_nodes);
     MPI_Type_free(&msgStartDatatype);
 }

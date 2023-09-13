@@ -5,11 +5,23 @@
 #include <mpi.h>
 
 extern int DEBUG;
+extern int DEBUG_PROCESS;
 extern int HEIGHT;
 
 int printf_debug(const char *format, ...) {
+    if (!DEBUG && !DEBUG_PROCESS) return 1;
 
-    printf("[DEBUG] ");
+    int world_rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+    if (DEBUG_PROCESS > 0 && world_rank != DEBUG_PROCESS) return 1;
+    // Check if string is only "\n", in case print without prefix
+    if (format[0] == '\n' && format[1] == '\0') {
+        printf("\n");
+        return 1;
+    } else {
+        printf("[DEBUG][PROCESS %d] ", world_rank);
+    }
+
     va_list args;
     va_start(args, format);
     int result = vprintf(format, args);

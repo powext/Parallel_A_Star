@@ -26,14 +26,21 @@ include_directories("${OPENMP_INCLUDES}")
 set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS} -fsanitize=address -g")
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 
-add_executable(parallel_a_star_new src/main.c src/compute_distance.c src/hash_table.c src/input_generator.c src/generic_list.c src/priority_queue.c src/utility.c include/compute_distance.h include/main.h include/colors.h include/print.h src/print.c include/parallel.h src/parallel.c
+add_executable(parallel_a_star_new src/main.c src/compute_distance.c src/input_generator.c src/priority_queue.c src/utility.c include/compute_distance.h include/main.h include/colors.h include/print.h src/print.c include/parallel.h src/parallel.c
         src/comm.c
         include/comm.h
+        src/parallel_distribution.c
+        include/parallel_distribution.h
+        include/exit_points.h
+        src/exit_points.c
+        src/cJSON.c
+        include/cJSON.h
+        include/cJSON.h
+        src/cJSON.c
+        src/json_output.c
+        include/json_output.h
         src/compute_path.c
-        include/util.h)
+        src/parallel_paths.c)
 
 target_link_libraries(parallel_a_star_new PRIVATE MPI::MPI_C)
-target_link_libraries(parallel_a_star_new PRIVATE "${OPENMP_LIBRARIES}/libomp.dylib")
-
-
 target_link_libraries(parallel_a_star_new PRIVATE "${OPENMP_LIBRARIES}/libomp.dylib")

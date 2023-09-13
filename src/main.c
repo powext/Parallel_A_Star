@@ -8,14 +8,15 @@
 #include "../include/compute_distance.h"
 #include "../include/parallel.h"
 #include "../include/parallel_distribution.h"
+#include "../include/utility.h"
 
 int DEBUG = 0;
+int DEBUG_PROCESS = 0;
 
 void initialize_nodes_from_file(char* file, int size, Node* nodes, Node** starting_node, Node** destination_node) {
-
     FILE* fp = fopen(file, "r");
     if (fp == NULL) {
-        printf("[ERROR] Opening %s!\n", file);
+        printf_debug("[ERROR] Opening %s!\n", file);
         exit(1);
     }
 
@@ -69,7 +70,7 @@ char* look_for_file(char** argv, int argc) {
                 if (i + 1 < argc) {
                     return argv[i + 1];
                 } else {
-                    printf("Missing value for -input parameter.\n");
+                    printf_debug("Missing value for -input parameter.\n");
                 }
             }
         }
@@ -103,6 +104,22 @@ int check_debug(int argc, char** argv) {
     return 0;
 }
 
+int check_debug_process(int argc, char** argv) {
+    for (int i = 1; i < argc; i++) { // Start from 1 to skip the program name (argv[0])
+        // Check if the argument is a named parameter (starts with '-')
+        if (argv[i][0] == '-') {
+            // Compare the argument with various named parameters
+            if (strcmp(argv[i], "-debugprocess") == 0) {
+                // The next argument (i + 1) is the value for the "-input" parameter
+                if (i + 1 < argc) {
+                    return (int) strtol(argv[i + 1], NULL, 10); // Skip the value argument
+                }
+            }
+        }
+    }
+    return -1;
+}
+
 int look_for_size(char** argv, int argc) {
     for (int i = 1; i < argc; i++) { // Start from 1 to skip the program name (argv[0])
         // Check if the argument is a named parameter (starts with '-')
@@ -113,7 +130,7 @@ int look_for_size(char** argv, int argc) {
                 if (i + 1 < argc) {
                     return (int) strtol(argv[i + 1], NULL, 10); // Skip the value argument
                 } else {
-                    printf("Missing value for -size parameter.\n");
+                    printf_debug("Missing value for -size parameter.\n");
                 }
             }
         }
@@ -187,7 +204,7 @@ int get_matrix_size(int argc, char** argv, char* filename){
     if (matrix_input_size < 1){
         matrix_input_size = find_maze_size(filename);
         if (matrix_input_size < 1){
-            printf("[ERROR] Maze dimension not specified! Please use -size parameter");
+            printf_debug("[ERROR] Maze dimension not specified! Please use -size parameter");
         }
     }
     return matrix_input_size;
@@ -221,38 +238,41 @@ int main(int argc, char** argv) {
     double current_time;
 
     DEBUG = check_debug(argc, argv);
+    DEBUG_PROCESS = check_debug_process(argc, argv);
+    if (DEBUG_PROCESS > -1)
+        DEBUG = 1;
     // parallel parameter runs the parallel version of the program instead of the serial one
     if (look_for_mode(argv, argc)) {
         int* n_chunks = malloc(sizeof(int));
         int* world_rank = malloc(sizeof(int));
 
         parallel_init(n_chunks, world_rank);
-        printf("[INFO][PROCESS %d] Algorithm running in parallel configuration\n", *world_rank);
-        if (*world_rank == 0){
+        printf_debug("Algorithm running in parallel configuration\n");
+        if (*world_rank == 0) {
 
             // file parameter imports data from the data/ directory
             if(DEBUG)
-                printf("[DEBUG][PROCESS %d] Searching for file!\n", *world_rank);
+                printf_debug(" Searching for file!\n");
             char* filename = look_for_file(argv, argc);
 
             if(DEBUG)
-                printf("[DEBUG][PROCESS %d] Filename: %s\n", *world_rank, filename);
+                printf_debug(" Filename: %s\n", filename);
 
             if (filename != NULL) {
                 matrix_input_size = get_matrix_size(argc, argv, filename);
                 if (DEBUG)
-                    printf("[DEBUG][PROCESS %d] Taking data from %s!\n", *world_rank, filename);
+                    printf_debug(" Taking data from %s!\n", filename);
                 nodes = malloc(matrix_input_size * matrix_input_size * sizeof(Node));
                 initialize_nodes_from_file(filename, matrix_input_size, nodes, &starting_node, &destination_node);
             } else {
-                printf("Please specify a maze to resolve using -file option!");
+                printf_debug("Please specify a maze to resolve using -file option!");
                 parallel_finalize();
                 exit(1);
             }
 
             initialise_node_list_distances(nodes, matrix_input_size*matrix_input_size, destination_node);
             if (DEBUG)
-                printf("[DEBUG][PROCESS %d] Initialised matrix of dimension %d!\n", *world_rank, matrix_input_size);
+                printf_debug("Initialised matrix of dimension %d!\n", matrix_input_size);
 
         }
 
@@ -270,7 +290,7 @@ int main(int argc, char** argv) {
 
         if(*world_rank == 0){
             if (DEBUG)
-                printf("[DEBUG][PROCESS %d] Getting time!\n", *world_rank);
+                printf_debug("Getting time!\n");
             current_time = MPI_Wtime();
         }
         MPI_Barrier(MPI_COMM_WORLD);
@@ -279,23 +299,23 @@ int main(int argc, char** argv) {
         MPI_Barrier(MPI_COMM_WORLD);
         if(*world_rank == 0){
             current_time = MPI_Wtime()-current_time;
-            printf("Time: %2fs", current_time);
+            printf_debug("Time: %2fs", current_time);
         }
         MPI_Barrier(MPI_COMM_WORLD);
         parallel_finalize();
     } else {
-        printf("[INFO] Algorithm running in serial configuration\n");
+        printf_debug("[INFO] Algorithm running in serial configuration\n");
 
         // file parameter imports data from the data/ directory
         char* filename = look_for_file(argv, argc);
         if (filename != NULL) {
             matrix_input_size = get_matrix_size(argc, argv, filename);
 
-            printf("[INFO] Taking data from %s\n", filename);
+            printf_debug("[INFO] Taking data from %s\n", filename);
             nodes = malloc(matrix_input_size * matrix_input_size * sizeof(Node));
             initialize_nodes_from_file(filename, matrix_input_size, nodes, &starting_node, &destination_node);
         } else {
-            printf("Please specify a maze to resolve using -file option!");
+            printf_debug("Please specify a maze to resolve using -file option!");
             exit(1);
         }
 
@@ -307,18 +327,18 @@ int main(int argc, char** argv) {
         initialise_matrix_distances(matrix, matrix_input_size, destination_node);
 
         clock_t start_time = clock();
-        printf("[INFO] Searching for path\n");
+        printf_debug("Searching for path\n");
         ChunkPath* tmp = compute_path(matrix, matrix_input_size, matrix_input_size, starting_node->coordinates, destination_node->coordinates, 0, 0);
 
         if(tmp->n_nodes > 0){
             clock_t end_time = clock();
             current_time = (double)(end_time - start_time) / CLOCKS_PER_SEC;
-            printf("[INFO] Path found in \n");
-            printf("%d, %2f, s\n", matrix_input_size, current_time);
+            printf_debug("Path found in \n");
+            printf_debug("%d, %2f, s\n", matrix_input_size, current_time);
             // print_matrix(matrix, matrix_input_size, tmp);
         } else {
-            printf("[INFO] Path not found\n");
-            printf("%d, NA, s\n", matrix_input_size);
+            printf_debug("Path not found\n");
+            printf_debug("%d, NA, s\n", matrix_input_size);
         }
 
     }

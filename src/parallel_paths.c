@@ -7,11 +7,13 @@
 #include "../include/comm.h"
 #include "../include/parallel_paths.h"
 #include "../include/compute_path.h"
+#include "../include/utility.h"
 // TODO: fix starting and ending point initialisation
 // TODO: fix starting and ending point checks
 // TODO: understand why it overlows computing path (wrong coordinates?)
 
 extern int DEBUG;
+extern int DEBUG_PROCESS;
 
 bool is_valid_exit_point_with_constraint(Coordinates exit_point, int side_length){
     if ((exit_point.x >= 0 && exit_point.y >= 0) && (exit_point.x < side_length && exit_point.y < side_length))
@@ -21,14 +23,17 @@ bool is_valid_exit_point_with_constraint(Coordinates exit_point, int side_length
 
 
 void print_paths(MsgChunkEnd* paths, int my_rank){
-    printf("[DEBUG][PROCESS %d] Printing paths!\n", my_rank);
+    printf_debug("Printing paths\n");
 
     for (int i = 0; i < paths->num_of_paths; i++){
-        printf("[PROCESS %d] [(%d %d) -> (%d %d) = %d] => ", my_rank, paths->paths[i].exit_points[0].x, paths->paths[i].exit_points[0].y, paths->paths[i].exit_points[1].x, paths->paths[i].exit_points[1].y, paths->paths[i].n_nodes);
-        for(int j = 0; j < paths->paths[i].n_nodes; j++){
+        printf_debug(" [(%d %d) -> (%d %d) = %d] = > ", paths->paths[i].exit_points[0].x, paths->paths[i].exit_points[0].y, paths->paths[i].exit_points[1].x, paths->paths[i].exit_points[1].y, paths->paths[i].n_nodes);
+        for (int j = 0; j < paths->paths[i].n_nodes; j++) {
+            if (!DEBUG) continue;
+            if (DEBUG_PROCESS > 0 && DEBUG_PROCESS != my_rank) continue;
             printf("(%d %d)\t", paths->paths[i].nodes[j].x, paths->paths[i].nodes[j].y);
         }
-        printf("[PROCESS %d]\n----------\n", my_rank);
+        printf_debug("\n");
+        printf_debug("----------\n");
     }
 }
 
@@ -45,7 +50,7 @@ void write_debug_info(MsgChunkStart* msg, Node* nodes, int size, int rank){
     // Create the filename with the rank variable
     char filename[20]; // Adjust the size as needed
     sprintf(filename, "log_%d.txt", rank);
-    printf("Writing file %s\n", filename);
+    printf_debug("Writing file %s\n", filename);
 
     // Open the log file in append mode
     logFile = fopen(filename, "w");
@@ -133,17 +138,15 @@ MsgChunkEnd* parallel_compute_paths(MsgChunkStart* msg, Node* elements, int size
         total_points[index] = msg->ending_point;
     }
 
-    if (DEBUG)
-        printf("[DEBUG][PROCESS %d][THREAD %d] Finding path between exit points\n", rank, omp_get_thread_num());
+    printf_debug("[THREAD %d] Finding path between exit points\n", omp_get_thread_num());
 
     int p = 0;
-#pragma omp parallel for shared(p, elements, size, msg, paths_found, total_points_num, total_points, DEBUG, rank) default(none) collapse(2)
+#pragma omp parallel for shared(p, elements, size, msg, paths_found, total_points_num, total_points, DEBUG, rank) default(none) collapse(2) num_threads(1)
     for (int i = 0; i < total_points_num; i++){
         for (int j = i + 1; j < total_points_num; j++){
             if ((&total_points[i] != NULL && is_valid_exit_point_with_constraint(total_points[i], size)) && (&total_points[j] != NULL && is_valid_exit_point_with_constraint(total_points[j], size)) && i != j) {
 
-                if (DEBUG)
-                    printf("[DEBUG][PROCESS %d][THREAD %d] Finding path %d between (%d:%d) -> (%d:%d)\n", rank, omp_get_thread_num(), p, total_points[i].x, total_points[i].y, total_points[j].x, total_points[j].y);
+                printf_debug("[THREAD %d] Finding path %d between (%d:%d) -> (%d:%d)\n", omp_get_thread_num(), p, total_points[i].x, total_points[i].y, total_points[j].x, total_points[j].y);
 
                 ChunkPath *new_path = compute_path(elements, msg->chunk_w, msg->chunk_h, total_points[i],
                                                    total_points[j], rank, omp_get_thread_num());
@@ -159,8 +162,7 @@ MsgChunkEnd* parallel_compute_paths(MsgChunkStart* msg, Node* elements, int size
         }
     }
 
-    if (DEBUG)
-        print_paths(paths_found, rank);
+    print_paths(paths_found, rank);
     free(total_points);
     return paths_found;
 }

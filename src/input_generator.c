@@ -11,6 +11,7 @@
 
 #include "../include/comm.h"
 #include "../include/compute_path.h"
+#include "../include/utility.h"
 
 #define GREY  "\x1B[38;5;236m"
 #define RED   "\x1B[38;5;160m"
@@ -90,13 +91,13 @@ bool test_matrix(char** matrix, int size, int start_x, int start_y, int end_x, i
         }
     }
 
-    ChunkPath* path = compute_path(tmp_matrix, size, size, start, end);
+    /*ChunkPath* path = compute_path(tmp_matrix, size, size, start, end, world_rank, n_chunks);
     if (path->n_nodes > 0){
         printf("Path found!\n");
         return true;
-    }
+    }*/
 
-    printf("Path empty!\n");
+    printf_debug("Path empty!\n");
     return false;
 }
 
@@ -138,7 +139,7 @@ void generate_input(int size) {
     for(int a = 0; a < size; a++){
         matrix[a] = malloc(size* sizeof(char));
     }
-    
+
     init_matrix(matrix, size);
 
     int start_x = rand() % size;
@@ -178,9 +179,11 @@ void generate_input(int size) {
         generate_input(size);
     }
 }
+/*
 
 int main(int argc, char** argv){
     int dimensions = 5000;
     generate_input(dimensions);
     return 0;
 }
+*/
