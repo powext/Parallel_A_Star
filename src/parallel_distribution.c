@@ -8,14 +8,6 @@
 extern int DEBUG;
 extern int DEBUG_PROCESS;
 
-MPI_Datatype create_coordinates_datatype() {
-    MPI_Datatype CoordType;
-    MPI_Type_contiguous(2, MPI_INT, &CoordType);
-    MPI_Type_commit(&CoordType);
-
-    return CoordType;
-}
-
 MPI_Datatype create_node_datatype() {
     MPI_Datatype CoordType;
     MPI_Type_contiguous(2, MPI_INT, &CoordType);
@@ -51,7 +43,6 @@ MPI_Datatype create_MsgStart_datatype() {
     MPI_Type_create_struct(2, blocklengths_coords, offsets_coords, types_coords, &mpi_coordinates);
     MPI_Type_commit(&mpi_coordinates);
 
-
     MPI_Datatype mpi_msgchunkstart;
     int blocklengths_chunk[6] = {1, 1, 1, 1, 1, N_EXIT_POINTS_PER_CHUNK};
     MPI_Datatype types_chunk[6] = {MPI_INT, MPI_INT, mpi_coordinates, mpi_coordinates, MPI_INT,mpi_coordinates};
@@ -70,6 +61,63 @@ MPI_Datatype create_MsgStart_datatype() {
 
 }
 
+MPI_Datatype create_ChunkPath_datatype(int size){
+    MPI_Datatype mpi_coordinates;
+    int blocklengths_coords[2] = {1, 1};
+    MPI_Datatype types_coords[2] = {MPI_INT, MPI_INT};
+    MPI_Aint offsets_coords[2];
+
+    offsets_coords[0] = offsetof(Coordinates, x);
+    offsets_coords[1] = offsetof(Coordinates, y);
+
+    MPI_Type_create_struct(2, blocklengths_coords, offsets_coords, types_coords, &mpi_coordinates);
+    MPI_Type_commit(&mpi_coordinates);
+
+}
+
+MPI_Datatype create_MsgEnd_datatype(int size){
+    MPI_Datatype mpi_coordinates;
+    int blocklengths_coords[2] = {1, 1};
+    MPI_Datatype types_coords[2] = {MPI_INT, MPI_INT};
+    MPI_Aint offsets_coords[2];
+
+    offsets_coords[0] = offsetof(Coordinates, x);
+    offsets_coords[1] = offsetof(Coordinates, y);
+
+    MPI_Type_create_struct(2, blocklengths_coords, offsets_coords, types_coords, &mpi_coordinates);
+    MPI_Type_commit(&mpi_coordinates);
+
+    MPI_Datatype mpi_chunkpath;
+    int chunk_size = size*size;
+
+    int blocklengths_chunks[3] = {1, 2, chunk_size};
+    MPI_Datatype types_chunks[3] = {MPI_INT, mpi_coordinates, mpi_coordinates};
+    MPI_Aint offsets_chunks[3];
+
+    offsets_chunks[0] = offsetof(ChunkPath, n_nodes);
+    offsets_chunks[1] = offsetof(ChunkPath, exit_points);
+    offsets_chunks[2] = offsetof(ChunkPath, nodes);
+
+    MPI_Type_create_struct(3, blocklengths_chunks, offsets_chunks, types_chunks, &mpi_chunkpath);
+    MPI_Type_commit(&mpi_chunkpath);
+
+    //MPI_Datatype mpi_chunkpath = create_ChunkPath_datatype(size);
+
+    MPI_Datatype mpi_msgchunkend;
+    int max_paths = (N_EXIT_POINTS_PER_CHUNK+2)*(N_EXIT_POINTS_PER_CHUNK+1);
+    int blocklengths_chunk[3] = {1, 1, max_paths};
+    MPI_Datatype types_chunk[3] = {MPI_INT, MPI_INT, mpi_chunkpath};
+    MPI_Aint offsets_chunk[3];
+
+    offsets_chunk[0] = offsetof(MsgChunkEnd, num_of_paths);
+    offsets_chunk[1] = offsetof(MsgChunkEnd, num_of_valid_paths);
+    offsets_chunk[2] = offsetof(MsgChunkEnd, paths);
+
+    MPI_Type_create_struct(3, blocklengths_chunk, offsets_chunk, types_chunk, &mpi_msgchunkend);
+    MPI_Type_commit(&mpi_msgchunkend);
+    return mpi_msgchunkend;
+}
+
 bool is_point_contained(Node* l_nodes, int chunk_side_length, Coordinates* point){
     Coordinates initial = l_nodes[0].coordinates;
     if (point->x < initial.x || point->x >= initial.x + chunk_side_length || point->y < initial.y || point->y >= initial.y + chunk_side_length){
@@ -78,6 +126,7 @@ bool is_point_contained(Node* l_nodes, int chunk_side_length, Coordinates* point
     return true;
 }
 
+// TODO: return complete path as ChunkPath where exit points are starting and ending points?
 void distribute_work(Node *nodes, int size, Node *starting_node, Node *destination_node, int n_chunks, int world_rank) {
     int chunk_side_length, chunk_size, n_chunks_per_side;
     int *send_count;
@@ -257,7 +306,33 @@ void distribute_work(Node *nodes, int size, Node *starting_node, Node *destinati
     }
 
     MsgChunkEnd* computed_paths = parallel_compute_paths(msg, l_nodes, size, world_rank);
-    printf_debug("Found %d paths/%d valid\n", computed_paths->num_of_valid_paths, computed_paths->num_of_paths);
+    printf_debug("Found %d paths/%d valid\n", computed_paths->num_of_paths, computed_paths->num_of_valid_paths);
+
+    MPI_Datatype msgEndDatatype = create_MsgEnd_datatype(chunk_side_length);
+
+    MsgChunkEnd *paths_lists_complete = malloc(sizeof(MsgChunkEnd) * n_chunks);
+
+    if(world_rank == 0) {
+        paths_lists_complete[0] = *computed_paths;
+    }
+
+    printf_debug("Communicating results to main process\n");
+    MPI_Barrier(MPI_COMM_WORLD);
+    if(world_rank == 0){
+        for (int i = 1; i < n_chunks; i++) {
+            //MsgChunkEnd* buf;
+            MPI_Recv(&paths_lists_complete[i], 1, msgEndDatatype, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            // paths_lists_complete[i] = *buf;
+            printf_debug("Received chunk paths %d", i);
+        }
+
+        for (int i = 0; i < n_chunks; ++i) {
+            printf_debug("[%d] = %d/%d ", i, paths_lists_complete[i].num_of_paths, paths_lists_complete[i].num_of_valid_paths);
+        }
+    } else {
+        printf_debug("Sending computed paths!\n");
+        MPI_Send(computed_paths, 1, msgEndDatatype, 0, 0, MPI_COMM_WORLD);
+    }
 
     // output_json(nodes, size, starting_node, destination_node, messages, world_rank, n_chunks);
     if (world_rank == 0) {
@@ -266,4 +341,5 @@ void distribute_work(Node *nodes, int size, Node *starting_node, Node *destinati
     }
     free(l_nodes);
     MPI_Type_free(&msgStartDatatype);
+    MPI_Type_free(&msgEndDatatype);
 }

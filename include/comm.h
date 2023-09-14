@@ -21,8 +21,8 @@ typedef struct Coordinates {
 /// exit_points array has a fixed sides size of 2
 typedef struct ChunkPath {
     int n_nodes;
-    Coordinates* nodes;
     Coordinates* exit_points;
+    Coordinates* nodes;
 } ChunkPath;
 
 /// A Node represent a single cell of the gridThe
@@ -72,9 +72,9 @@ typedef struct MsgChunkStart {
 ///
 /// paths array has a fixed size {N_EXIT_POINTS_PER_CHUNK}, some entries could be NULL
 typedef struct MsgChunkEnd {
-    ChunkPath* paths;
     int num_of_paths;
     int num_of_valid_paths;
+    ChunkPath* paths;
 } MsgChunkEnd;
 
 #endif //PARALLEL_A_STAR_NEW_COMM_H

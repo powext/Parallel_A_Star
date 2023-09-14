@@ -66,11 +66,11 @@ char* look_for_file(char** argv, int argc) {
         if (argv[i][0] == '-') {
             // Compare the argument with various named parameters
             if (strcmp(argv[i], "-file") == 0) {
-                // The next argument (i + 1) is the value for the "-input" parameter
+                // The next argument (i + 1) is the value for the "-file" parameter
                 if (i + 1 < argc) {
                     return argv[i + 1];
                 } else {
-                    printf_debug("Missing value for -input parameter.\n");
+                    printf_debug("Missing value for -file parameter.\n");
                 }
             }
         }
@@ -110,7 +110,7 @@ int check_debug_process(int argc, char** argv) {
         if (argv[i][0] == '-') {
             // Compare the argument with various named parameters
             if (strcmp(argv[i], "-debugprocess") == 0) {
-                // The next argument (i + 1) is the value for the "-input" parameter
+                // The next argument (i + 1) is the value for the "-debugprocess" parameter
                 if (i + 1 < argc) {
                     return (int) strtol(argv[i + 1], NULL, 10); // Skip the value argument
                 }
@@ -126,7 +126,7 @@ int look_for_size(char** argv, int argc) {
         if (argv[i][0] == '-') {
             // Compare the argument with various named parameters
             if (strcmp(argv[i], "-size") == 0) {
-                // The next argument (i + 1) is the value for the "-input" parameter
+                // The next argument (i + 1) is the value for the "-size" parameter
                 if (i + 1 < argc) {
                     return (int) strtol(argv[i + 1], NULL, 10); // Skip the value argument
                 } else {
@@ -289,8 +289,7 @@ int main(int argc, char** argv) {
         MPI_Barrier(MPI_COMM_WORLD);
 
         if(*world_rank == 0){
-            if (DEBUG)
-                printf_debug("Getting time!\n");
+            printf_debug("Getting time!\n");
             current_time = MPI_Wtime();
         }
         MPI_Barrier(MPI_COMM_WORLD);
@@ -328,7 +327,7 @@ int main(int argc, char** argv) {
 
         clock_t start_time = clock();
         printf_debug("Searching for path\n");
-        ChunkPath* tmp = compute_path(matrix, matrix_input_size, matrix_input_size, starting_node->coordinates, destination_node->coordinates, 0, 0);
+        ChunkPath* tmp = compute_path(matrix, matrix_input_size, matrix_input_size, starting_node->coordinates, destination_node->coordinates);
 
         if(tmp->n_nodes > 0){
             clock_t end_time = clock();
