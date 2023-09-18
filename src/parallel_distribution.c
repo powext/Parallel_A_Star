@@ -2,9 +2,9 @@
 #include "../include/exit_points.h"
 #include "../include/cJSON.h"
 #include "../include/utility.h"
-#include "../include/json_output.h"
-#include "../include/parallel_paths.h"
 #include "../include/parallel_collection.h"
+#include "../include/compute_distance.h"
+#include "../include/parallel_paths.h"
 
 extern int DEBUG;
 extern int DEBUG_PROCESS;
@@ -62,63 +62,6 @@ MPI_Datatype create_MsgStart_datatype() {
 
 }
 
-MPI_Datatype create_ChunkPath_datatype(int size){
-    MPI_Datatype mpi_coordinates;
-    int blocklengths_coords[2] = {1, 1};
-    MPI_Datatype types_coords[2] = {MPI_INT, MPI_INT};
-    MPI_Aint offsets_coords[2];
-
-    offsets_coords[0] = offsetof(Coordinates, x);
-    offsets_coords[1] = offsetof(Coordinates, y);
-
-    MPI_Type_create_struct(2, blocklengths_coords, offsets_coords, types_coords, &mpi_coordinates);
-    MPI_Type_commit(&mpi_coordinates);
-
-}
-
-MPI_Datatype create_MsgEnd_datatype(int size){
-    MPI_Datatype mpi_coordinates;
-    int blocklengths_coords[2] = {1, 1};
-    MPI_Datatype types_coords[2] = {MPI_INT, MPI_INT};
-    MPI_Aint offsets_coords[2];
-
-    offsets_coords[0] = offsetof(Coordinates, x);
-    offsets_coords[1] = offsetof(Coordinates, y);
-
-    MPI_Type_create_struct(2, blocklengths_coords, offsets_coords, types_coords, &mpi_coordinates);
-    MPI_Type_commit(&mpi_coordinates);
-
-    MPI_Datatype mpi_chunkpath;
-    int chunk_size = size*size;
-
-    int blocklengths_chunks[3] = {1, 2, chunk_size};
-    MPI_Datatype types_chunks[3] = {MPI_INT, mpi_coordinates, mpi_coordinates};
-    MPI_Aint offsets_chunks[3];
-
-    offsets_chunks[0] = offsetof(ChunkPath, n_nodes);
-    offsets_chunks[1] = offsetof(ChunkPath, exit_points);
-    offsets_chunks[2] = offsetof(ChunkPath, nodes);
-
-    MPI_Type_create_struct(3, blocklengths_chunks, offsets_chunks, types_chunks, &mpi_chunkpath);
-    MPI_Type_commit(&mpi_chunkpath);
-
-    //MPI_Datatype mpi_chunkpath = create_ChunkPath_datatype(size);
-
-    MPI_Datatype mpi_msgchunkend;
-    int max_paths = (N_EXIT_POINTS_PER_CHUNK+2)*(N_EXIT_POINTS_PER_CHUNK+1);
-    int blocklengths_chunk[3] = {1, 1, max_paths};
-    MPI_Datatype types_chunk[3] = {MPI_INT, MPI_INT, mpi_chunkpath};
-    MPI_Aint offsets_chunk[3];
-
-    offsets_chunk[0] = offsetof(MsgChunkEnd, num_of_paths);
-    offsets_chunk[1] = offsetof(MsgChunkEnd, num_of_valid_paths);
-    offsets_chunk[2] = offsetof(MsgChunkEnd, paths);
-
-    MPI_Type_create_struct(3, blocklengths_chunk, offsets_chunk, types_chunk, &mpi_msgchunkend);
-    MPI_Type_commit(&mpi_msgchunkend);
-    return mpi_msgchunkend;
-}
-
 bool is_point_contained(Node* l_nodes, int chunk_side_length, Coordinates* point){
     Coordinates initial = l_nodes[0].coordinates;
     if (point->x < initial.x || point->x >= initial.x + chunk_side_length || point->y < initial.y || point->y >= initial.y + chunk_side_length){
@@ -128,7 +71,7 @@ bool is_point_contained(Node* l_nodes, int chunk_side_length, Coordinates* point
 }
 
 // TODO: return complete path as ChunkPath where exit points are starting and ending points?
-void distribute_work(Node *nodes, int size, Node *starting_node, Node *destination_node, int n_chunks, int world_rank) {
+MsgChunkEnd* distribute_work(Node *nodes, AdjList** graph, MsgChunkStart** start_msgs, int size, Node *starting_node, Node *destination_node, int n_chunks, int world_rank) {
     int chunk_side_length, chunk_size, n_chunks_per_side;
     int *send_count;
     int *displacements;
@@ -215,13 +158,12 @@ void distribute_work(Node *nodes, int size, Node *starting_node, Node *destinati
     MPI_Datatype msgStartDatatype = create_MsgStart_datatype();
 
     printf_debug("Allocating MsgStart!\n");
-    MsgChunkStart *messages = malloc(sizeof(MsgChunkStart) * n_chunks);
+    *start_msgs = malloc(sizeof(MsgChunkStart) * n_chunks);
     MPI_Barrier(MPI_COMM_WORLD);
 
     if (world_rank == 0) {
 #pragma omp parallel for shared(chunk_side_length, nodes)
         for (int i = 0; i < n_chunks; i++) {
-
             printf_debug("Creating msg %d\n", i);
             MsgChunkStart local_msg = {
                     .chunk_w = chunk_side_length,
@@ -240,30 +182,29 @@ void distribute_work(Node *nodes, int size, Node *starting_node, Node *destinati
             };
 #pragma omp critical
             {
-                local_msg.num_exit_points += find_chunk_corners_exit_points(world_rank, nodes, size, chunk_side_length,
+                find_chunk_corners_exit_points(world_rank, nodes, size, chunk_side_length,
                                                                             initial, local_msg.exit_points);
-                local_msg.num_exit_points += find_chunk_sides_exit_points(world_rank, nodes, size, chunk_side_length,
+                find_chunk_sides_exit_points(world_rank, nodes, size, chunk_side_length,
                                                                           initial, local_msg.exit_points);
-
-                printf_debug("[THREAD %d] Number of exit points: %d\n",
-                           omp_get_thread_num(), local_msg.num_exit_points);
+                local_msg.num_exit_points = N_EXIT_POINTS_PER_CHUNK;
 
                 if (DEBUG) {
                     printf_debug("[THREAD %d] Exit_points: ", omp_get_thread_num());
                     for (int j = 0; j < N_EXIT_POINTS_PER_CHUNK; j++) {
-                        printf_debug("%d:%d ", local_msg.exit_points[j].x, local_msg.exit_points[j].y);
+                        if (!DEBUG) continue;
+                        if (DEBUG_PROCESS > 0 && DEBUG_PROCESS != world_rank) continue;
+                        printf("%d:%d ", local_msg.exit_points[j].x, local_msg.exit_points[j].y);
                     }
                     printf_debug("\n");
                 }
             }
 
-            messages[i] = local_msg;
+            (*start_msgs)[i] = local_msg;
         }
         MPI_Type_free(&node_type);
         MPI_Type_free(&node_vector_type);
         MPI_Type_free(&node_vector_type_resized);
         free(send_count);
-
     }
 
     MsgChunkStart* msg = malloc(sizeof(MsgChunkStart));
@@ -271,24 +212,21 @@ void distribute_work(Node *nodes, int size, Node *starting_node, Node *destinati
     MPI_Barrier(MPI_COMM_WORLD);
     if (world_rank == 0) {
         for (int i = 1; i < n_chunks; ++i) {
-            if (DEBUG)
-                printf_debug("Sending Message %d\n", i);
-            if (MPI_Send(&messages[i], 1, msgStartDatatype, i, 0, MPI_COMM_WORLD)) {
+            printf_debug("Sending Message %d\n", i);
+            if (MPI_Send(&(*start_msgs)[i], 1, msgStartDatatype, i, 0, MPI_COMM_WORLD)) {
                 printf_debug("[Send error\n");
                 exit(1);
             }
         }
-        if (DEBUG)
-            printf_debug("Assigning Message 0\n");
-        msg = &messages[0];
+        printf_debug("Assigning Message 0\n");
+        msg = &(*start_msgs)[0];
         if (!is_point_contained(l_nodes, chunk_side_length, &msg->starting_point)){
             msg->starting_point = (Coordinates){.x = -1, .y = -1};
         } if (!is_point_contained(l_nodes,chunk_side_length, &msg->ending_point)){
             msg->ending_point = (Coordinates){.x = -1, .y = -1};
         }
     } else {
-        if (DEBUG)
-            printf_debug("Receiving Messages\n");
+        printf_debug("Receiving Messages\n");
 
         if (MPI_Recv(msg, 1, msgStartDatatype, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE)) {
             printf_debug("Recv error\n");
@@ -299,33 +237,22 @@ void distribute_work(Node *nodes, int size, Node *starting_node, Node *destinati
         } if (!is_point_contained(l_nodes, chunk_side_length, &msg->ending_point)){
             msg->ending_point = (Coordinates){.x = -1, .y = -1};
         }
-        if (DEBUG) {
-            printf_debug("Received Messages\n");
-            printf_debug("Start: (%d:%d)\n", msg->starting_point.x, msg->starting_point.y);
-            printf_debug("End: (%d:%d)\n", msg->ending_point.x, msg->ending_point.y);
-        }
+        printf_debug("Received Messages\n");
+        printf_debug("Start: (%d:%d)\n", msg->starting_point.x, msg->starting_point.y);
+        printf_debug("End: (%d:%d)\n", msg->ending_point.x, msg->ending_point.y);
     }
 
-    MsgChunkEnd* computed_paths = parallel_compute_paths(msg, l_nodes, size, world_rank);
-    printf_debug("Found %d paths/%d valid\n", computed_paths->num_of_paths, computed_paths->num_of_valid_paths);
-    /// TODO: Implement chunks computing
-    MsgChunkEnd* msgChunkEnd = get_dummy_endmsg(world_rank);
-
-    MsgChunkEnd *receivedMsgs = collect_msgs_end(msgChunkEnd, world_rank, n_chunks);
-
-    output_json(nodes, starting_node, destination_node, messages, world_rank, n_chunks);
+    MsgChunkEnd* msgChunkEnd = parallel_compute_paths(msg, l_nodes, size, world_rank);
+    // MsgChunkEnd* msgChunkEnd = get_dummy_endmsg(world_rank);
 
     if (world_rank == 0) {
-        for (int i = 0; i < n_chunks; i++) {
-            for (int j = 0; j < receivedMsgs[i].num_of_paths; j++) {
-                free(receivedMsgs[i].paths[j].nodes);
-                free(receivedMsgs[i].paths[j].exit_points);
-            }
-            free(receivedMsgs[i].paths);
-        }
+        *graph = create_graph(size*size);
     }
-    free(receivedMsgs);
+
+    MsgChunkEnd *receivedMsgs = collect_msgs_end(msgChunkEnd, nodes, size, world_rank, n_chunks, *graph);
+
     free(l_nodes);
+    if (world_rank == 0) free(displacements);
     MPI_Type_free(&msgStartDatatype);
-    MPI_Type_free(&msgEndDatatype);
+    return receivedMsgs;
 }

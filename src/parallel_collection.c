@@ -4,6 +4,7 @@
 #include "../include/comm.h"
 #include "../include/parallel_collection.h"
 #include "../include/util.h"
+#include "../include/adjlist.h"
 
 MsgChunkEnd *get_dummy_endmsg(int world_rank) {
     MsgChunkEnd* msg = malloc(sizeof(MsgChunkEnd));
@@ -62,42 +63,42 @@ MsgChunkEnd *get_dummy_endmsg(int world_rank) {
             msg->paths[0].n_nodes = 16;
             msg->paths[0].nodes = malloc(sizeof(Coordinates) * msg->paths[0].n_nodes);
             msg->paths[0].nodes[0].x = 10;
-            msg->paths[0].nodes[0].y = 4;
+            msg->paths[0].nodes[0].y = 5;
 
             msg->paths[0].nodes[1].x = 10;
-            msg->paths[0].nodes[1].y = 3;
+            msg->paths[0].nodes[1].y = 4;
 
-            msg->paths[0].nodes[2].x = 11;
+            msg->paths[0].nodes[2].x = 10;
             msg->paths[0].nodes[2].y = 3;
 
-            msg->paths[0].nodes[3].x = 12;
+            msg->paths[0].nodes[3].x = 11;
             msg->paths[0].nodes[3].y = 3;
 
-            msg->paths[0].nodes[4].x = 13;
+            msg->paths[0].nodes[4].x = 12;
             msg->paths[0].nodes[4].y = 3;
 
-            msg->paths[0].nodes[5].x = 14;
+            msg->paths[0].nodes[5].x = 13;
             msg->paths[0].nodes[5].y = 3;
 
-            msg->paths[0].nodes[6].x = 15;
+            msg->paths[0].nodes[6].x = 14;
             msg->paths[0].nodes[6].y = 3;
 
-            msg->paths[0].nodes[7].x = 16;
+            msg->paths[0].nodes[7].x = 15;
             msg->paths[0].nodes[7].y = 3;
 
             msg->paths[0].nodes[8].x = 16;
-            msg->paths[0].nodes[8].y = 4;
+            msg->paths[0].nodes[8].y = 3;
 
             msg->paths[0].nodes[9].x = 16;
-            msg->paths[0].nodes[9].y = 5;
+            msg->paths[0].nodes[9].y = 4;
 
             msg->paths[0].nodes[10].x = 16;
-            msg->paths[0].nodes[10].y = 6;
+            msg->paths[0].nodes[10].y = 5;
 
             msg->paths[0].nodes[11].x = 16;
-            msg->paths[0].nodes[11].y = 7;
+            msg->paths[0].nodes[11].y = 6;
 
-            msg->paths[0].nodes[12].x = 17;
+            msg->paths[0].nodes[12].x = 16;
             msg->paths[0].nodes[12].y = 7;
 
             msg->paths[0].nodes[13].x = 16;
@@ -117,46 +118,43 @@ MsgChunkEnd *get_dummy_endmsg(int world_rank) {
         case 2:
             msg->paths = malloc(sizeof(ChunkPath) * 2);
             msg->num_of_paths = 2;
-            msg->paths[0].n_nodes = 12;
+            msg->paths[0].n_nodes = 11;
             msg->paths[0].nodes = malloc(sizeof(Coordinates) * msg->paths[0].n_nodes);
             msg->paths[0].nodes[0].x = 5;
-            msg->paths[0].nodes[0].y = 9;
+            msg->paths[0].nodes[0].y = 10;
 
-            msg->paths[0].nodes[1].x = 5;
+            msg->paths[0].nodes[1].x = 4;
             msg->paths[0].nodes[1].y = 10;
 
             msg->paths[0].nodes[2].x = 4;
-            msg->paths[0].nodes[2].y = 10;
+            msg->paths[0].nodes[2].y = 11;
 
             msg->paths[0].nodes[3].x = 4;
-            msg->paths[0].nodes[3].y = 11;
+            msg->paths[0].nodes[3].y = 12;
 
             msg->paths[0].nodes[4].x = 4;
-            msg->paths[0].nodes[4].y = 12;
+            msg->paths[0].nodes[4].y = 13;
 
             msg->paths[0].nodes[5].x = 4;
-            msg->paths[0].nodes[5].y = 13;
+            msg->paths[0].nodes[5].y = 14;
 
             msg->paths[0].nodes[6].x = 4;
-            msg->paths[0].nodes[6].y = 14;
+            msg->paths[0].nodes[6].y = 15;
 
-            msg->paths[0].nodes[7].x = 4;
+            msg->paths[0].nodes[7].x = 5;
             msg->paths[0].nodes[7].y = 15;
 
-            msg->paths[0].nodes[8].x = 5;
+            msg->paths[0].nodes[8].x = 6;
             msg->paths[0].nodes[8].y = 15;
 
-            msg->paths[0].nodes[9].x = 6;
+            msg->paths[0].nodes[9].x = 7;
             msg->paths[0].nodes[9].y = 15;
 
-            msg->paths[0].nodes[10].x = 7;
+            msg->paths[0].nodes[10].x = 8;
             msg->paths[0].nodes[10].y = 15;
-
-            msg->paths[0].nodes[11].x = 8;
-            msg->paths[0].nodes[11].y = 15;
             msg->paths[0].exit_points = malloc(sizeof(Coordinates) * 2);
             msg->paths[0].exit_points[0].x = 5;
-            msg->paths[0].exit_points[0].y = 9;
+            msg->paths[0].exit_points[0].y = 10;
             msg->paths[0].exit_points[1].x = 8;
             msg->paths[0].exit_points[1].y = 15;
 
@@ -166,10 +164,10 @@ MsgChunkEnd *get_dummy_endmsg(int world_rank) {
             msg->paths[1].nodes[0].y = 15;
 
             msg->paths[1].nodes[1].x = 8;
-            msg->paths[1].nodes[1].y = 14;
+            msg->paths[1].nodes[1].y = 16;
 
             msg->paths[1].nodes[2].x = 9;
-            msg->paths[1].nodes[2].y = 14;
+            msg->paths[1].nodes[2].y = 16;
             msg->paths[1].exit_points = malloc(sizeof(Coordinates) * 2);
             msg->paths[1].exit_points[0].x = 8;
             msg->paths[1].exit_points[0].y = 15;
@@ -237,7 +235,7 @@ int packMsgChunkEnd(MsgChunkEnd *msg, void *buf, int bufsize) {
     return position; // Return the size of packed data
 }
 
-MsgChunkEnd *collect_msgs_end(MsgChunkEnd* msg, int world_rank, int n_chunks) {
+MsgChunkEnd *collect_msgs_end(MsgChunkEnd* msg, Node* nodes, int size, int world_rank, int n_chunks, AdjList* graph) {
     int EXIT_POINTS_PER_PATH = 2;
 
     int bufsize = MPI_BSEND_OVERHEAD;
@@ -284,6 +282,18 @@ MsgChunkEnd *collect_msgs_end(MsgChunkEnd* msg, int world_rank, int n_chunks) {
                 MPI_Unpack(allData, totalDataSize, &position, receivedMsgs[i].paths[j].nodes, receivedMsgs[i].paths[j].n_nodes * 2, MPI_INT, MPI_COMM_WORLD);
                 receivedMsgs[i].paths[j].exit_points = (Coordinates *)malloc(2 * sizeof(Coordinates));
                 MPI_Unpack(allData, totalDataSize, &position, receivedMsgs[i].paths[j].exit_points, 4, MPI_INT, MPI_COMM_WORLD);
+            }
+        }
+        printf("[DEBUG] R%d - received %d messages\n", world_rank, n_chunks);
+
+        for (int i = 0; i < n_chunks; i++) {
+            for (int j = 0; j < receivedMsgs[i].num_of_paths; j++) {
+                add_edge(graph, receivedMsgs[i].paths[j].exit_points[0].y * size + receivedMsgs[i].paths[j].exit_points[0].x,
+                         &nodes[receivedMsgs[i].paths[j].exit_points[1].y * size + receivedMsgs[i].paths[j].exit_points[1].x],
+                         &receivedMsgs[i].paths[j]);
+                add_edge(graph, receivedMsgs[i].paths[j].exit_points[1].y * size + receivedMsgs[i].paths[j].exit_points[1].x,
+                         &nodes[receivedMsgs[i].paths[j].exit_points[0].y * size + receivedMsgs[i].paths[j].exit_points[0].x],
+                         &receivedMsgs[i].paths[j]);
             }
         }
     }

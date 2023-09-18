@@ -89,7 +89,10 @@ char *createCompactMatrixOutput(Node *matrix, int size) {
         }
     }
 
-    // Replace the last comma with a closing bracket
+    if (strlen(output) == 0) {
+        free(output);
+        return "";
+    }
     if (output[strlen(output) - 1] == ',') {
         output[strlen(output) - 1] = '\0';
     }
@@ -97,39 +100,53 @@ char *createCompactMatrixOutput(Node *matrix, int size) {
     return output;
 }
 
-void output_json(Node *nodes, int size, Node *starting_node, Node *destination_node, MsgChunkStart *start_messages, int world_rank,
-            int n_chunks) {
+void output_json(
+        Node* nodes,
+        int size,
+        Node* starting_node,
+        Node *destination_node,
+        MsgChunkStart* start_messages,
+        MsgChunkEnd* end_messages,
+        ChunkPath* final_path,
+        int world_rank,
+        int n_chunks
+) {
     if (world_rank != 0) return;
 
-    cJSON *root = cJSON_CreateObject();
+    cJSON *c_root = cJSON_CreateObject();
 
-    cJSON_AddItemToObject(root, "n_chunks", cJSON_CreateNumber(n_chunks));
-    cJSON_AddItemToObject(root, "grid_size", cJSON_CreateNumber(size));
-    cJSON_AddItemToObject(root, "obstacles",
+    cJSON_AddItemToObject(c_root, "n_chunks", cJSON_CreateNumber(n_chunks));
+    cJSON_AddItemToObject(c_root, "grid_size", cJSON_CreateNumber(size));
+    cJSON_AddItemToObject(c_root, "obstacles",
                           cJSON_CreateString(createCompactMatrixOutput(nodes, size * size)));
 
     // print destination_node coordinates
     printf("[DEBUG] R%d - destination_node: %d:%d\n", world_rank, destination_node->coordinates.x,
            destination_node->coordinates.y);
 
-    char *starting_point_flattened = malloc(sizeof(char) * (GRID_WIDTH * 2) + 1);
+    char *starting_point_flattened = malloc(sizeof(char) * (size * 2) + 1);
     sprintf(starting_point_flattened, "%d,%d", starting_node->coordinates.x, starting_node->coordinates.y);
-    cJSON_AddItemToObject(root, "starting_point", cJSON_CreateString(starting_point_flattened));
-    char *ending_point_flattened = malloc(sizeof(char) * (GRID_WIDTH * 2) + 1);
+    cJSON_AddItemToObject(c_root, "starting_point", cJSON_CreateString(starting_point_flattened));
+    char *ending_point_flattened = malloc(sizeof(char) * (size * 2) + 1);
     sprintf(ending_point_flattened, "%d,%d", destination_node->coordinates.x, destination_node->coordinates.y);
-    cJSON_AddItemToObject(root, "destination_point", cJSON_CreateString(ending_point_flattened));
+    cJSON_AddItemToObject(c_root, "destination_point", cJSON_CreateString(ending_point_flattened));
 
-    cJSON *chunk_info = cJSON_CreateArray();
+    cJSON *c_chunk_info = cJSON_CreateArray();
     for (int i = 0; i < n_chunks; i++) {
-        cJSON *chunk = cJSON_CreateObject();
-        cJSON_AddItemToObject(chunk, "exit_points", cJSON_CreateString(
+        cJSON *c_chunk = cJSON_CreateObject();
+        cJSON_AddItemToObject(c_chunk, "exit_points", cJSON_CreateString(
                 createCompactCoordinatesOutput(start_messages[i].exit_points, N_EXIT_POINTS_PER_CHUNK)));
-        cJSON_AddItemToArray(chunk_info, chunk);
+        cJSON *c_chunk_paths = cJSON_CreateArray();
+        for (int j = 0; j < end_messages[i].num_of_paths; j++) {
+            cJSON_AddItemToArray(c_chunk_paths, cJSON_CreateString(
+                    createCompactCoordinatesOutput(end_messages[i].paths[j].nodes, end_messages[i].paths[j].n_nodes)));
+        }
+        cJSON_AddItemToObject(c_chunk, "paths", c_chunk_paths);
+        cJSON_AddItemToArray(c_chunk_info, c_chunk);
     }
+    cJSON_AddItemToObject(c_root, "chunks", c_chunk_info);
 
-    cJSON_AddItemToObject(root, "chunks", chunk_info);
+    cJSON_AddItemToObject(c_root, "final_path", cJSON_CreateString(createCompactCoordinatesOutput(final_path->nodes, final_path->n_nodes)));
 
-    writeOutputToFile(root);
-    free(start_messages);
-    free(nodes);
+    writeOutputToFile(c_root);
 }

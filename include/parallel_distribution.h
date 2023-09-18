@@ -7,6 +7,7 @@
 #include "../include/print.h"
 #include "../include/comm.h"
 #include "omp.h"
+#include "adjlist.h"
 
 //
 // Created by Simone Bianchin on 24/08/23.
@@ -15,8 +16,10 @@
 #ifndef PARALLEL_A_STAR_PARALLEL_DISTRIBUTION_H
 #define PARALLEL_A_STAR_PARALLEL_DISTRIBUTION_H
 
-void distribute_work(
+MsgChunkEnd* distribute_work(
         Node* nodes,
+        AdjList** graph,
+        MsgChunkStart** start_msgs,
         int size,
         Node* starting_node,
         Node* destination_node,

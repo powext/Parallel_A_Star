@@ -69,7 +69,7 @@ int find_chunk_corners_exit_points(int rank, Node *nodes, int size, int chunk_si
         }
     }
 
-    return number_of_exit_points;
+    return 4;
 }
 
 int find_exit_points_on_vector(int world_rank, Node *nodes, int size, Coordinates *vector, Coordinates *outer_vector, int vector_length,
@@ -87,7 +87,7 @@ int find_exit_points_on_vector(int world_rank, Node *nodes, int size, Coordinate
         for (int i = 0; i < vector_length; i++) {
             if (!DEBUG) continue;
             if (DEBUG_PROCESS > 0 && DEBUG_PROCESS != world_rank) continue;
-            printf_debug("%d:%d ", outer_vector[i].x, outer_vector[i].y);
+            printf("%d:%d ", outer_vector[i].x, outer_vector[i].y);
         }
         printf_debug("\n");
     }

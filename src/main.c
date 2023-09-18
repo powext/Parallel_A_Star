@@ -9,6 +9,7 @@
 #include "../include/parallel.h"
 #include "../include/parallel_distribution.h"
 #include "../include/utility.h"
+#include "../include/json_output.h"
 
 int DEBUG = 0;
 int DEBUG_PROCESS = 0;
@@ -214,7 +215,7 @@ void initialise_matrix_distances(Node** matrix, int size, Node* destination_node
     for (int i=0; i<size; i++){
         for(int j=0; j<size; j++){
             matrix[i][j].distance = INT16_MAX / 2;
-            matrix[i][j].heuristic = compute_heuristic(matrix[i][j], *destination_node);
+            matrix[i][j].heuristic = compute_heuristic_nodes(&matrix[i][j], destination_node);
             matrix[i][j].score = matrix[i][j].distance + matrix[i][j].heuristic;
         }
     }
@@ -223,7 +224,7 @@ void initialise_matrix_distances(Node** matrix, int size, Node* destination_node
 void initialise_node_list_distances(Node* nodes, int size, Node* destination_node){
     for (int i=0; i<size; i++){
             nodes[i].distance = INT16_MAX / 2;
-            nodes[i].heuristic = compute_heuristic(nodes[i], *destination_node);
+            nodes[i].heuristic = compute_heuristic_nodes(&nodes[i], destination_node);
             nodes[i].score = nodes[i].distance + nodes[i].heuristic;
     }
 }
@@ -265,7 +266,7 @@ int main(int argc, char** argv) {
                 nodes = malloc(matrix_input_size * matrix_input_size * sizeof(Node));
                 initialize_nodes_from_file(filename, matrix_input_size, nodes, &starting_node, &destination_node);
             } else {
-                printf_debug("Please specify a maze to resolve using -file option!");
+                printf_debug("Please specify a maze to resolve using -file option!\n");
                 parallel_finalize();
                 exit(1);
             }
@@ -293,14 +294,62 @@ int main(int argc, char** argv) {
             current_time = MPI_Wtime();
         }
         MPI_Barrier(MPI_COMM_WORLD);
-        distribute_work(nodes, matrix_input_size, starting_node, destination_node, *n_chunks, *world_rank);
-        // parallel_compute_paths();
-        MPI_Barrier(MPI_COMM_WORLD);
-        if(*world_rank == 0){
-            current_time = MPI_Wtime()-current_time;
-            printf_debug("Time: %2fs", current_time);
+
+        MsgChunkStart** start_msgs = malloc(sizeof(MsgChunkStart*));
+        AdjList** graph = malloc(sizeof(AdjList*));
+        MsgChunkEnd* receivedMsgs = distribute_work(nodes, graph, start_msgs, matrix_input_size, starting_node, destination_node, *n_chunks, *world_rank);
+
+        if (*world_rank != 0) {
+            parallel_finalize();
+            exit(0);
         }
-        MPI_Barrier(MPI_COMM_WORLD);
+
+        // print AdjList
+        printf_debug("AdjList:\n");
+        for (int i = 0; i < matrix_input_size*matrix_input_size; i++) {
+            printf_debug("Node %d: ", i);
+            Edge* edge = get_index_iterator(*graph, i);
+            while (edge) {
+                printf("%d ", edge->node->id);
+                edge = edge->next;
+            }
+            printf_debug("\n");
+        }
+
+        ChunkPath* final_path = compute_path(
+                nodes,
+                *graph,
+                matrix_input_size,
+                matrix_input_size,
+                starting_node->coordinates,
+                destination_node->coordinates,
+                compute_weight_edges,
+                compute_heuristic_nodes,
+                get_neighbours_edges,
+                reassemble_final_path_edges
+        );
+        //print final path
+        printf("Final path (total nodes: %d):\n", final_path->n_nodes);
+        for (int i = 0; i < final_path->n_nodes; i++) {
+            printf("Node %d: %d:%d\n", i, final_path->nodes[i].x, final_path->nodes[i].y);
+        }
+        free_graph(*graph, matrix_input_size*matrix_input_size);
+
+        output_json(nodes, matrix_input_size, starting_node, destination_node, *start_msgs, receivedMsgs, final_path, *world_rank, *n_chunks);
+
+        for (int i = 0; i < *n_chunks; i++) {
+            for (int j = 0; j < receivedMsgs[i].num_of_paths; j++) {
+                free(receivedMsgs[i].paths[j].nodes);
+                free(receivedMsgs[i].paths[j].exit_points);
+            }
+            free(receivedMsgs[i].paths);
+        }
+        free(receivedMsgs);
+        free(start_msgs);
+        free(nodes);
+
+        current_time = MPI_Wtime()-current_time;
+        printf_debug("Time: %2fs", current_time);
         parallel_finalize();
     } else {
         printf_debug("[INFO] Algorithm running in serial configuration\n");
@@ -314,7 +363,7 @@ int main(int argc, char** argv) {
             nodes = malloc(matrix_input_size * matrix_input_size * sizeof(Node));
             initialize_nodes_from_file(filename, matrix_input_size, nodes, &starting_node, &destination_node);
         } else {
-            printf_debug("Please specify a maze to resolve using -file option!");
+            printf_debug("Please specify a maze to resolve using -file option!\n");
             exit(1);
         }
 
@@ -327,9 +376,9 @@ int main(int argc, char** argv) {
 
         clock_t start_time = clock();
         printf_debug("Searching for path\n");
-        ChunkPath* tmp = compute_path(matrix, matrix_input_size, matrix_input_size, starting_node->coordinates, destination_node->coordinates);
+        ChunkPath* tmp = compute_path(matrix, NULL, matrix_input_size, matrix_input_size, starting_node->coordinates, destination_node->coordinates, compute_weight_nodes, compute_heuristic_nodes, get_neighbours_nodes, reassemble_final_path_nodes);
 
-        if(tmp->n_nodes > 0){
+        if (tmp->n_nodes > 0) {
             clock_t end_time = clock();
             current_time = (double)(end_time - start_time) / CLOCKS_PER_SEC;
             printf_debug("Path found in \n");
