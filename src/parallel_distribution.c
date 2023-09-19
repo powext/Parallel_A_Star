@@ -6,8 +6,7 @@
 #include "../include/compute_distance.h"
 #include "../include/parallel_paths.h"
 
-extern int DEBUG;
-extern int DEBUG_PROCESS;
+extern bool DEBUG;
 
 MPI_Datatype create_node_datatype() {
     MPI_Datatype CoordType;
@@ -70,7 +69,6 @@ bool is_point_contained(Node* l_nodes, int chunk_side_length, Coordinates* point
     return true;
 }
 
-// TODO: return complete path as ChunkPath where exit points are starting and ending points?
 MsgChunkEnd* distribute_work(Node *nodes, AdjList** graph, MsgChunkStart** start_msgs, int size, Node *starting_node, Node *destination_node, int n_chunks, int world_rank) {
     int chunk_side_length, chunk_size, n_chunks_per_side;
     int *send_count;
@@ -113,7 +111,6 @@ MsgChunkEnd* distribute_work(Node *nodes, AdjList** graph, MsgChunkStart** start
             printf_debug("Displacements: ");
             for (int i = 0; i < n_chunks; i++) {
                 if (!DEBUG) continue;
-                if (DEBUG_PROCESS > 0 && DEBUG_PROCESS != world_rank) continue;
                 printf("%d ", displacements[i]);
             }
             printf_debug("\n");
@@ -164,6 +161,7 @@ MsgChunkEnd* distribute_work(Node *nodes, AdjList** graph, MsgChunkStart** start
     if (world_rank == 0) {
 #pragma omp parallel for shared(chunk_side_length, nodes)
         for (int i = 0; i < n_chunks; i++) {
+
             printf_debug("Creating msg %d\n", i);
             MsgChunkStart local_msg = {
                     .chunk_w = chunk_side_length,
@@ -192,7 +190,6 @@ MsgChunkEnd* distribute_work(Node *nodes, AdjList** graph, MsgChunkStart** start
                     printf_debug("[THREAD %d] Exit_points: ", omp_get_thread_num());
                     for (int j = 0; j < N_EXIT_POINTS_PER_CHUNK; j++) {
                         if (!DEBUG) continue;
-                        if (DEBUG_PROCESS > 0 && DEBUG_PROCESS != world_rank) continue;
                         printf("%d:%d ", local_msg.exit_points[j].x, local_msg.exit_points[j].y);
                     }
                     printf_debug("\n");
@@ -243,7 +240,6 @@ MsgChunkEnd* distribute_work(Node *nodes, AdjList** graph, MsgChunkStart** start
     }
 
     MsgChunkEnd* msgChunkEnd = parallel_compute_paths(msg, l_nodes, size, world_rank);
-    // MsgChunkEnd* msgChunkEnd = get_dummy_endmsg(world_rank);
 
     if (world_rank == 0) {
         *graph = create_graph(size*size);

@@ -3,10 +3,10 @@
 #include <mpi.h>
 #include "../include/comm.h"
 #include "../include/parallel_collection.h"
-#include "../include/util.h"
 #include "../include/adjlist.h"
+#include "../include/utility.h"
 
-MsgChunkEnd *get_dummy_endmsg(int world_rank) {
+/*MsgChunkEnd *get_dummy_endmsg(int world_rank) {
     MsgChunkEnd* msg = malloc(sizeof(MsgChunkEnd));
     switch (world_rank) {
         case 0:
@@ -222,7 +222,7 @@ MsgChunkEnd *get_dummy_endmsg(int world_rank) {
             break;
     }
     return msg;
-}
+}*/
 
 int packMsgChunkEnd(MsgChunkEnd *msg, void *buf, int bufsize) {
     int position = 0;
@@ -284,7 +284,7 @@ MsgChunkEnd *collect_msgs_end(MsgChunkEnd* msg, Node* nodes, int size, int world
                 MPI_Unpack(allData, totalDataSize, &position, receivedMsgs[i].paths[j].exit_points, 4, MPI_INT, MPI_COMM_WORLD);
             }
         }
-        printf("[DEBUG] R%d - received %d messages\n", world_rank, n_chunks);
+        printf_debug("R%d - received %d messages\n", world_rank, n_chunks);
 
         for (int i = 0; i < n_chunks; i++) {
             for (int j = 0; j < receivedMsgs[i].num_of_paths; j++) {

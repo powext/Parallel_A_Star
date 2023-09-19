@@ -11,8 +11,7 @@
 #include "../include/utility.h"
 #include "../include/json_output.h"
 
-int DEBUG = 0;
-int DEBUG_PROCESS = 0;
+bool DEBUG = false;
 
 void initialize_nodes_from_file(char* file, int size, Node* nodes, Node** starting_node, Node** destination_node) {
     FILE* fp = fopen(file, "r");
@@ -56,9 +55,6 @@ void initialize_nodes_from_file(char* file, int size, Node* nodes, Node** starti
             nodes[id].type = cell;
         j++;
     }
-
-//    for(int a = 0; a < size*size; a++)
-//        printf("%d\t", nodes[a].id);
 }
 
 char* look_for_file(char** argv, int argc) {
@@ -92,33 +88,17 @@ int look_for_mode(char** argv, int argc) {
     return 0;
 }
 
-int check_debug(int argc, char** argv) {
+bool check_debug(int argc, char** argv) {
     for (int i = 1; i < argc; i++) { // Start from 1 to skip the program name (argv[0])
         // Check if the argument is a named parameter (starts with '-')
         if (argv[i][0] == '-') {
             // Compare the argument with various named parameters
             if (strcmp(argv[i], "-debug") == 0) {
-                return 1;
+                return true;
             }
         }
     }
-    return 0;
-}
-
-int check_debug_process(int argc, char** argv) {
-    for (int i = 1; i < argc; i++) { // Start from 1 to skip the program name (argv[0])
-        // Check if the argument is a named parameter (starts with '-')
-        if (argv[i][0] == '-') {
-            // Compare the argument with various named parameters
-            if (strcmp(argv[i], "-debugprocess") == 0) {
-                // The next argument (i + 1) is the value for the "-debugprocess" parameter
-                if (i + 1 < argc) {
-                    return (int) strtol(argv[i + 1], NULL, 10); // Skip the value argument
-                }
-            }
-        }
-    }
-    return -1;
+    return false;
 }
 
 int look_for_size(char** argv, int argc) {
@@ -191,10 +171,10 @@ void print_node(Node node, bool in_path){
 
 }
 
-void print_matrix(Node** matrix, int size, ChunkPath* path){
+void print_matrix(Node* matrix, int size, ChunkPath* path){
     for (int i=0; i<size; i++){
         for (int j = 0; j < size; j++){
-            print_node(matrix[i][j], is_in_path(&matrix[i][j], path->nodes, path->n_nodes));
+            print_node(matrix[i*size + j], is_in_path(&matrix[i*size + j], path->nodes, path->n_nodes));
         }
         printf("\n");
     }
@@ -211,15 +191,6 @@ int get_matrix_size(int argc, char** argv, char* filename){
     return matrix_input_size;
 }
 
-void initialise_matrix_distances(Node** matrix, int size, Node* destination_node){
-    for (int i=0; i<size; i++){
-        for(int j=0; j<size; j++){
-            matrix[i][j].distance = INT16_MAX / 2;
-            matrix[i][j].heuristic = compute_heuristic_nodes(&matrix[i][j], destination_node);
-            matrix[i][j].score = matrix[i][j].distance + matrix[i][j].heuristic;
-        }
-    }
-}
 
 void initialise_node_list_distances(Node* nodes, int size, Node* destination_node){
     for (int i=0; i<size; i++){
@@ -239,9 +210,7 @@ int main(int argc, char** argv) {
     double current_time;
 
     DEBUG = check_debug(argc, argv);
-    DEBUG_PROCESS = check_debug_process(argc, argv);
-    if (DEBUG_PROCESS > -1)
-        DEBUG = 1;
+
     // parallel parameter runs the parallel version of the program instead of the serial one
     if (look_for_mode(argv, argc)) {
         int* n_chunks = malloc(sizeof(int));
@@ -289,6 +258,7 @@ int main(int argc, char** argv) {
 
         MPI_Barrier(MPI_COMM_WORLD);
 
+        // TODO: measure execution time for single process then average? (see slide lectures)
         if(*world_rank == 0){
             printf_debug("Getting time!\n");
             current_time = MPI_Wtime();
@@ -305,15 +275,17 @@ int main(int argc, char** argv) {
         }
 
         // print AdjList
-        printf_debug("AdjList:\n");
-        for (int i = 0; i < matrix_input_size*matrix_input_size; i++) {
-            printf_debug("Node %d: ", i);
-            Edge* edge = get_index_iterator(*graph, i);
-            while (edge) {
-                printf("%d ", edge->node->id);
-                edge = edge->next;
+        if(DEBUG) {
+            printf_debug("AdjList:\n");
+            for (int i = 0; i < matrix_input_size * matrix_input_size; i++) {
+                printf_debug("Node %d: ", i);
+                Edge *edge = get_index_iterator(*graph, i);
+                while (edge) {
+                    printf("%d ", edge->node->id);
+                    edge = edge->next;
+                }
+                printf_debug("\n");
             }
-            printf_debug("\n");
         }
 
         ChunkPath* final_path = compute_path(
@@ -328,10 +300,13 @@ int main(int argc, char** argv) {
                 get_neighbours_edges,
                 reassemble_final_path_edges
         );
+
         //print final path
-        printf("Final path (total nodes: %d):\n", final_path->n_nodes);
-        for (int i = 0; i < final_path->n_nodes; i++) {
-            printf("Node %d: %d:%d\n", i, final_path->nodes[i].x, final_path->nodes[i].y);
+        if (DEBUG) {
+            printf("Final path (total nodes: %d):\n", final_path->n_nodes);
+            for (int i = 0; i < final_path->n_nodes; i++) {
+                printf("Node %d: %d:%d\n", i, final_path->nodes[i].x, final_path->nodes[i].y);
+            }
         }
         free_graph(*graph, matrix_input_size*matrix_input_size);
 
@@ -349,8 +324,11 @@ int main(int argc, char** argv) {
         free(nodes);
 
         current_time = MPI_Wtime()-current_time;
-        printf_debug("Time: %2fs", current_time);
         parallel_finalize();
+        printf("%d, %2f, s\n", matrix_input_size, current_time);
+        if(final_path->n_nodes <= 0){
+            printf("Path not found\n");
+        }
     } else {
         printf_debug("[INFO] Algorithm running in serial configuration\n");
 
@@ -363,32 +341,24 @@ int main(int argc, char** argv) {
             nodes = malloc(matrix_input_size * matrix_input_size * sizeof(Node));
             initialize_nodes_from_file(filename, matrix_input_size, nodes, &starting_node, &destination_node);
         } else {
-            printf_debug("Please specify a maze to resolve using -file option!\n");
+            printf("Please specify a maze to resolve using -file option!\n");
             exit(1);
         }
 
-        Node** matrix = (Node**)malloc(sizeof(Node*) * matrix_input_size);
-        for (int i = 0; i < matrix_input_size; i++) {
-            matrix[i] = &nodes[i * matrix_input_size];
-        }
-
-        initialise_matrix_distances(matrix, matrix_input_size, destination_node);
+        initialise_node_list_distances(nodes, matrix_input_size*matrix_input_size, destination_node);
 
         clock_t start_time = clock();
         printf_debug("Searching for path\n");
-        ChunkPath* tmp = compute_path(matrix, NULL, matrix_input_size, matrix_input_size, starting_node->coordinates, destination_node->coordinates, compute_weight_nodes, compute_heuristic_nodes, get_neighbours_nodes, reassemble_final_path_nodes);
+        ChunkPath* tmp = compute_path(nodes, NULL, matrix_input_size, matrix_input_size, starting_node->coordinates, destination_node->coordinates, compute_weight_nodes, compute_heuristic_nodes, get_neighbours_nodes, reassemble_final_path_nodes);
 
-        if (tmp->n_nodes > 0) {
-            clock_t end_time = clock();
-            current_time = (double)(end_time - start_time) / CLOCKS_PER_SEC;
-            printf_debug("Path found in \n");
-            printf_debug("%d, %2f, s\n", matrix_input_size, current_time);
-            // print_matrix(matrix, matrix_input_size, tmp);
-        } else {
+        clock_t end_time = clock();
+        current_time = (double)(end_time - start_time) / CLOCKS_PER_SEC;
+        printf("%d, %2f, s\n", matrix_input_size, current_time);
+        if(tmp->n_nodes <= 0){
             printf_debug("Path not found\n");
-            printf_debug("%d, NA, s\n", matrix_input_size);
+        } else {
+            print_matrix(nodes, matrix_input_size, tmp);
         }
-
     }
 
     return 0;

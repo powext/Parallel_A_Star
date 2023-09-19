@@ -1,7 +1,7 @@
 //
 // Created by Jacopo Clocchiatti on 03/09/23.
 //
-#include "omp.h"
+#include <omp.h>
 #include <stdlib.h>
 #include <printf.h>
 #include <string.h>
@@ -11,8 +11,7 @@
 #include "../include/utility.h"
 #include "../include/compute_distance.h"
 
-extern int DEBUG;
-extern int DEBUG_PROCESS;
+extern bool DEBUG;
 
 bool is_valid_exit_point_with_constraint(Coordinates exit_point, int side_length){
     if ((exit_point.x >= 0 && exit_point.y >= 0) && (exit_point.x < side_length && exit_point.y < side_length)){
@@ -29,7 +28,6 @@ void print_paths(MsgChunkEnd* paths, int my_rank){
         printf_debug(" [(%d %d) -> (%d %d) = %d] = > ", paths->paths[i].exit_points[0].x, paths->paths[i].exit_points[0].y, paths->paths[i].exit_points[1].x, paths->paths[i].exit_points[1].y, paths->paths[i].n_nodes);
         for (int j = 0; j < paths->paths[i].n_nodes; j++) {
             if (!DEBUG) continue;
-            if (DEBUG_PROCESS > 0 && DEBUG_PROCESS != my_rank) continue;
             printf("(%d %d)\t", paths->paths[i].nodes[j].x, paths->paths[i].nodes[j].y);
         }
         printf_debug("\n");
@@ -37,7 +35,7 @@ void print_paths(MsgChunkEnd* paths, int my_rank){
     }
 }
 
-void write_debug_info(MsgChunkStart* msg, Node* nodes, int size, int rank){
+/*void write_debug_info(MsgChunkStart* msg, Node* nodes, int size, int rank){
     FILE *logFile;
     time_t currentTime;
     struct tm *localTimeInfo;
@@ -81,7 +79,7 @@ void write_debug_info(MsgChunkStart* msg, Node* nodes, int size, int rank){
     fprintf(logFile, "\n");
 
     fclose(logFile);
-}
+}*/
 
 /* Compute the path using parallelism if it is needed
  * If both start and end point are in the same chunk the path will be one,
@@ -89,9 +87,6 @@ void write_debug_info(MsgChunkStart* msg, Node* nodes, int size, int rank){
  * If neither is present, compute the paths between each pair of exit points
  */
 MsgChunkEnd* parallel_compute_paths(MsgChunkStart* msg_start, Node* nodes, int size, int rank){
-    if (DEBUG){
-        write_debug_info(msg_start, nodes, size, rank);
-    }
 
     MsgChunkEnd* msg_end = malloc(sizeof(MsgChunkEnd));
     msg_end->num_of_paths = 0;

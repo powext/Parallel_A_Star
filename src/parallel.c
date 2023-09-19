@@ -1,12 +1,12 @@
-#include "mpi.h"
-#include "../include/priority_queue.h"
-#include "../include/parallel_distribution.h"
+#include <mpi.h>
+#include <stdlib.h>
+#include <stdbool.h>
+//#include "../include/priority_queue.h"
+//#include "../include/parallel_distribution.h"
 
 #define MAX_EXIT_POINTS 9
 
-extern int GRID_HEIGHT;
-extern int GRID_WIDTH;
-extern int DEBUG;
+extern bool DEBUG;
 
 void parallel_init(int* n_chunks, int* world_rank) {
     MPI_Init(NULL, NULL);

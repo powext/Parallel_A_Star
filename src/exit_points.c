@@ -2,10 +2,7 @@
 #include "../include/print.h"
 #include "../include/utility.h"
 
-// extern int GRID_HEIGHT;
-// extern int GRID_WIDTH;
-extern int DEBUG;
-extern int DEBUG_PROCESS;
+extern bool DEBUG;
 
 int find_chunk_corners_exit_points(int rank, Node *nodes, int size, int chunk_side_length, Coordinates initial, Coordinates *exit_points) {
     enum Direction {
@@ -79,14 +76,12 @@ int find_exit_points_on_vector(int world_rank, Node *nodes, int size, Coordinate
         printf_debug("Searching new vector: ");
         for (int i = 0; i < vector_length; i++) {
             if (!DEBUG) continue;
-            if (DEBUG_PROCESS > 0 && DEBUG_PROCESS != world_rank) continue;
             printf("%d:%d ", vector[i].x, vector[i].y);
         }
         printf_debug("\n");
         printf_debug("Searching new outer_vector: ");
         for (int i = 0; i < vector_length; i++) {
             if (!DEBUG) continue;
-            if (DEBUG_PROCESS > 0 && DEBUG_PROCESS != world_rank) continue;
             printf("%d:%d ", outer_vector[i].x, outer_vector[i].y);
         }
         printf_debug("\n");
@@ -157,9 +152,10 @@ int find_chunk_sides_exit_points(int rank, Node *nodes, int size, int chunk_side
             vector1b[i] = nodes[(initial.y - 1) * size + initial.x + i].coordinates;
         }
         number_of_exit_points += find_exit_points_on_vector(rank, nodes, size, vector1a, vector1b, chunk_side_length, exit_points, 0);
-    } else if (DEBUG) {
-        printf_debug("Out of top\n");
     }
+//    else if (DEBUG) {
+//        printf_debug("Out of top\n");
+//    }
 
     if ((initial.y + chunk_side_length) < size) {
         printf_debug("Ok bottom\n");
@@ -168,9 +164,10 @@ int find_chunk_sides_exit_points(int rank, Node *nodes, int size, int chunk_side
             vector2b[i] = nodes[(initial.y + chunk_side_length) * size + initial.x + i].coordinates;
         }
         number_of_exit_points += find_exit_points_on_vector(rank, nodes, size, vector2a, vector2b, chunk_side_length, exit_points, 1);
-    } else if (DEBUG) {
-        printf_debug("Out of bottom\n");
     }
+//    else if (DEBUG) {
+//        printf_debug("Out of bottom\n");
+//    }
 
     // Iterating left and right
     // Debug
@@ -181,9 +178,10 @@ int find_chunk_sides_exit_points(int rank, Node *nodes, int size, int chunk_side
             vector1b[i] = nodes[(initial.y + i) * size + initial.x - 1].coordinates;
         }
         number_of_exit_points += find_exit_points_on_vector(rank, nodes, size, vector1a, vector1b, chunk_side_length, exit_points, 2);
-    } else if (DEBUG) {
-        printf_debug("Out of left\n");
     }
+//    else if (DEBUG) {
+//        printf_debug("Out of left\n");
+//    }
     if ((initial.x + chunk_side_length) < size) {
         printf_debug("Ok right\n");
         for (int i = 0; i < chunk_side_length; i++) {
@@ -191,9 +189,10 @@ int find_chunk_sides_exit_points(int rank, Node *nodes, int size, int chunk_side
             vector2b[i] = nodes[(initial.y + i) * size + initial.x + chunk_side_length].coordinates;
         }
         number_of_exit_points += find_exit_points_on_vector(rank, nodes, size, vector2a, vector2b, chunk_side_length, exit_points, 3);
-    } else if (DEBUG) {
-        printf_debug("Out of right\n");
     }
+//    else if (DEBUG) {
+//        printf_debug("Out of right\n");
+//    }
 
     return number_of_exit_points;
 }

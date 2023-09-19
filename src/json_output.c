@@ -6,9 +6,7 @@
 #include <limits.h>
 #include "../include/json_output.h"
 #include "../include/cJSON.h"
-
-// extern int GRID_HEIGHT;
-// extern int GRID_WIDTH;
+#include "../include/utility.h"
 
 void writeOutputToFile(cJSON *json_object) {
     struct stat st = {0};
@@ -121,7 +119,7 @@ void output_json(
                           cJSON_CreateString(createCompactMatrixOutput(nodes, size * size)));
 
     // print destination_node coordinates
-    printf("[DEBUG] R%d - destination_node: %d:%d\n", world_rank, destination_node->coordinates.x,
+    printf_debug("[DEBUG] R%d - destination_node: %d:%d\n", world_rank, destination_node->coordinates.x,
            destination_node->coordinates.y);
 
     char *starting_point_flattened = malloc(sizeof(char) * (size * 2) + 1);

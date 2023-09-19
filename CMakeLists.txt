@@ -23,24 +23,46 @@ find_package(OpenMP REQUIRED)
 
 include_directories("${OPENMP_INCLUDES}")
 
-set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS} -fsanitize=address -g")
+add_compile_options(-fsanitize=address)
+add_link_options(-fsanitize=address)
+
+set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 
-add_executable(parallel_a_star_new src/main.c src/compute_distance.c src/input_generator.c src/priority_queue.c src/utility.c include/compute_distance.h include/main.h include/colors.h include/print.h src/print.c include/parallel.h src/parallel.c
-        src/comm.c
+add_executable(parallel_a_star_new
+        include/main.h
+        src/main.c
+        include/adjlist.h
+        src/adjlist.c
+        include/cJSON.h
+        src/cJSON.c
         include/comm.h
-        src/parallel_distribution.c
-        include/parallel_distribution.h
+        src/comm.c
+        include/compute_distance.h
+        src/compute_distance.c
+        include/compute_path.h
+        src/compute_path.c
         include/exit_points.h
         src/exit_points.c
-        src/cJSON.c
-        include/cJSON.h
-        include/cJSON.h
-        src/cJSON.c
-        src/json_output.c
         include/json_output.h
-        src/compute_path.c
-        src/parallel_paths.c)
+        src/json_output.c
+        include/parallel.h
+        src/parallel.c
+        include/parallel_collection.h
+        src/parallel_collection.c
+        include/parallel_distribution.h
+        src/parallel_distribution.c
+        include/parallel_paths.h
+        src/parallel_paths.c
+        include/colors.h
+        include/print.h
+        src/print.c
+        include/priority_queue.h
+        src/priority_queue.c
+        include/utility.h
+        src/utility.c
+        # src/input_generator.c
+)
 
 target_link_libraries(parallel_a_star_new PRIVATE MPI::MPI_C)
 target_link_libraries(parallel_a_star_new PRIVATE "${OPENMP_LIBRARIES}/libomp.dylib")

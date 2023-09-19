@@ -11,7 +11,7 @@
 
 #define NODES_EDGE_WEIGHT 1
 
-extern int DEBUG;
+extern bool DEBUG;
 
 void updateNodeValues(Node* node, Node* parent, Node* endNode, double (*compute_heuristic)(Node*, Node*)) {
     node->distance = parent->distance + NODES_EDGE_WEIGHT;
