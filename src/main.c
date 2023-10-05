@@ -356,9 +356,8 @@ int main(int argc, char** argv) {
         printf("%d, %2f, s\n", matrix_input_size, current_time);
         if(tmp->n_nodes <= 0){
             printf_debug("Path not found\n");
-        } else {
-            print_matrix(nodes, matrix_input_size, tmp);
         }
+
     }
 
     return 0;

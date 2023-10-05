@@ -10,8 +10,6 @@
 #include <stdbool.h>
 
 #include "../include/comm.h"
-#include "../include/compute_path.h"
-#include "../include/utility.h"
 
 #define GREY  "\x1B[38;5;236m"
 #define RED   "\x1B[38;5;160m"
@@ -19,6 +17,7 @@
 #define WHITE "\x1B[38;5;15m"
 #define RESET "\x1B[0m"
 
+bool DEBUG = false;
 
 void init_matrix(char** matrix, int size) {
     int i, j;
@@ -69,14 +68,11 @@ NodeType get_type(char node){
         return  obstacle;
 }
 
-bool test_matrix(char** matrix, int size, int start_x, int start_y, int end_x, int end_y){
+/*bool test_matrix(char** matrix, int size, int start_x, int start_y, int end_x, int end_y){
     Coordinates start = {start_x, start_y};
     Coordinates end = {end_x, end_y};
 
-    Node** tmp_matrix = malloc(size*sizeof(Node*));
-    for(int i = 0; i < size; i++){
-        tmp_matrix[i] = malloc(size*sizeof(Node));
-    }
+    Node* tmp_matrix = malloc(size*size*sizeof(Node*));
 
     for(int i = 0; i < size; i++){
         for(int j = 0; j < size; j++){
@@ -87,19 +83,28 @@ bool test_matrix(char** matrix, int size, int start_x, int start_y, int end_x, i
             tmp->coordinates.y = j;
             tmp->distance = INT16_MAX-2;
             tmp->heuristic = compute_heuristic_tmp(tmp->coordinates, end);
-            tmp_matrix[j][i] = *tmp;
+            tmp_matrix[i*size + j] = *tmp;
         }
     }
 
-    /*ChunkPath* path = compute_path(tmp_matrix, size, size, start, end, world_rank, n_chunks);
+    ChunkPath* path = compute_path(tmp_matrix,
+                                   NULL,
+                                   size,
+                                   size,
+                                   start,
+                                   end,
+                                   compute_weight_nodes,
+                                   compute_heuristic_nodes,
+                                   get_neighbours_nodes,
+                                   reassemble_final_path_nodes);
     if (path->n_nodes > 0){
         printf("Path found!\n");
         return true;
-    }*/
+    }
 
-    printf_debug("Path empty!\n");
+    printf("Path empty!\n");
     return false;
-}
+}*/
 
 void write_matrix(char** matrix, int size){
     printf("Writing file!\n");
@@ -169,21 +174,28 @@ void generate_input(int size) {
         printf("\n");
     }*/
 
-    if(test_matrix(matrix, size, start_x, start_y, end_x, end_y)){
-        write_matrix(matrix, size);
-    } else{
-        for(int a = 0; a < size; a++){
-            free(matrix[a]);
-        }
-        free(matrix);
-        generate_input(size);
-    }
+//    if(test_matrix(matrix, size, start_x, start_y, end_x, end_y)){
+    write_matrix(matrix, size);
+    printf("%d:%d -> %d:%d\n", start_x, start_y, end_x, end_y);
+//    }
+//    else{
+//        for(int a = 0; a < size; a++){
+//            free(matrix[a]);
+//        }
+//        free(matrix);
+//        generate_input(size);
+//    }
 }
-/*
 
 int main(int argc, char** argv){
-    int dimensions = 5000;
+    if (argc < 2){
+        printf("Error! Usage should be of ./script x where x is the side dimension\n");
+        exit(1);
+    }
+
+    char* dimension = argv[1];
+    int dimensions = atoi(dimension);
+
     generate_input(dimensions);
     return 0;
 }
-*/

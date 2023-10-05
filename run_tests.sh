@@ -12,7 +12,7 @@ OUTPUT_FILE="results.txt"
 NODES=(1 2 4 8)
 CPUS=(1 2 4 8)
 OMP_NUM_THREADS_VALUES=(1 2 4 8)
-PROCESS_NUM_VALUES=(1 4 9 16)
+PROCESS_NUM_VALUES=(1 4 8 16 32)
 
 # Iterate through files in the "data" directory
 for file in "$DIRECTORY"/*; do
