@@ -8,7 +8,7 @@
 extern bool DEBUG;
 
 int printf_debug(const char *format, ...) {
-    if (!DEBUG) return 1;
+    if (DEBUG < 1) return 1;
 
     int world_rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);

@@ -5,6 +5,7 @@
 #include "../include/parallel_collection.h"
 #include "../include/compute_distance.h"
 #include "../include/parallel_paths.h"
+#include "time.h"
 
 extern bool DEBUG;
 
@@ -69,7 +70,7 @@ bool is_point_contained(Node* l_nodes, int chunk_side_length, Coordinates* point
     return true;
 }
 
-MsgChunkEnd* distribute_work(Node *nodes, AdjList** graph, MsgChunkStart** start_msgs, int size, Node *starting_node, Node *destination_node, int n_chunks, int world_rank) {
+MsgChunkEnd* distribute_work(Node *nodes, AdjList** graph, MsgChunkStart** start_msgs, int size, Node *starting_node, Node *destination_node, int n_chunks, int world_rank, clock_t *step_start_time) {
     int chunk_side_length, chunk_size, n_chunks_per_side;
     int *send_count;
     int *displacements;
@@ -239,6 +240,13 @@ MsgChunkEnd* distribute_work(Node *nodes, AdjList** graph, MsgChunkStart** start
         printf_debug("End: (%d:%d)\n", msg->ending_point.x, msg->ending_point.y);
     }
 
+    if (world_rank == 0) {
+        clock_t step_time_end = clock();
+        double diff_time_final_computation = (double)(step_time_end - *step_start_time) / CLOCKS_PER_SEC;
+        printf("Distribution took: %2f seconds\n", diff_time_final_computation);
+        *step_start_time = clock();
+    }
+
     MsgChunkEnd* msgChunkEnd = parallel_compute_paths(msg, l_nodes, size, world_rank);
 
     if (world_rank == 0) {
@@ -246,6 +254,13 @@ MsgChunkEnd* distribute_work(Node *nodes, AdjList** graph, MsgChunkStart** start
     }
 
     MsgChunkEnd *receivedMsgs = collect_msgs_end(msgChunkEnd, nodes, size, world_rank, n_chunks, *graph);
+
+    if (world_rank == 0) {
+        clock_t step_time_end = clock();
+        double diff_time_final_computation = (double)(step_time_end - *step_start_time) / CLOCKS_PER_SEC;
+        printf("Chunks computation took: %2f seconds\n", diff_time_final_computation);
+        *step_start_time = clock();
+    }
 
     free(l_nodes);
     if (world_rank == 0) free(displacements);

@@ -208,6 +208,8 @@ int main(int argc, char** argv) {
     Node* nodes;
     int matrix_input_size;
     double current_time;
+    clock_t step_time_start;
+    clock_t step_time_end;
 
     DEBUG = check_debug(argc, argv);
 
@@ -219,8 +221,8 @@ int main(int argc, char** argv) {
         parallel_init(n_chunks, world_rank);
         printf_debug("Algorithm running in parallel configuration\n");
         if (*world_rank == 0) {
-
             // file parameter imports data from the data/ directory
+            step_time_start = clock();
             if(DEBUG)
                 printf_debug(" Searching for file!\n");
             char* filename = look_for_file(argv, argc);
@@ -247,6 +249,12 @@ int main(int argc, char** argv) {
         }
 
         MPI_Barrier(MPI_COMM_WORLD);
+        if (*world_rank == 0) {
+            step_time_end = clock();
+            double diff_time_initialization = (double)(step_time_end - step_time_start) / CLOCKS_PER_SEC;
+            printf("Initialization took: %2f seconds\n", diff_time_initialization);
+            step_time_start = clock();
+        }
 
         if(*world_rank == 0){
             for(int i = 1; i < *n_chunks; i++){
@@ -267,7 +275,7 @@ int main(int argc, char** argv) {
 
         MsgChunkStart** start_msgs = malloc(sizeof(MsgChunkStart*));
         AdjList** graph = malloc(sizeof(AdjList*));
-        MsgChunkEnd* receivedMsgs = distribute_work(nodes, graph, start_msgs, matrix_input_size, starting_node, destination_node, *n_chunks, *world_rank);
+        MsgChunkEnd* receivedMsgs = distribute_work(nodes, graph, start_msgs, matrix_input_size, starting_node, destination_node, *n_chunks, *world_rank, &step_time_start);
 
         if (*world_rank != 0) {
             parallel_finalize();
@@ -301,7 +309,13 @@ int main(int argc, char** argv) {
                 reassemble_final_path_edges
         );
 
-        //print final path
+        if (*world_rank == 0) {
+            step_time_end = clock();
+            double diff_time_final_computation = (double)(step_time_end - step_time_start) / CLOCKS_PER_SEC;
+            printf("Final computation took: %2f seconds\n", diff_time_final_computation);
+            step_time_start = clock();
+        }
+
         if (DEBUG) {
             printf("Final path (total nodes: %d):\n", final_path->n_nodes);
             for (int i = 0; i < final_path->n_nodes; i++) {

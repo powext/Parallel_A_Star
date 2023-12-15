@@ -24,7 +24,8 @@ MsgChunkEnd* distribute_work(
         Node* starting_node,
         Node* destination_node,
         int n_chunks,
-        int world_rank);
+        int world_rank,
+        clock_t *step_start_time);
 
 #endif //PARALLEL_A_STAR_NEW_EXIT_POINTS_H
 
