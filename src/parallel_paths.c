@@ -81,6 +81,11 @@ void print_paths(MsgChunkEnd* paths, int my_rank){
     fclose(logFile);
 }*/
 
+typedef struct {
+    int i;
+    int j;
+} PointPair;
+
 /* Compute the path using parallelism if it is needed
  * If both start and end point are in the same chunk the path will be one,
  * If only one is present, compute in parallel the paths from that and each exit points
@@ -118,45 +123,56 @@ MsgChunkEnd* parallel_compute_paths(MsgChunkStart* msg_start, Node* nodes, int s
     for (int i = 0; i < msg_start->num_exit_points; i++){
         printf_debug("(%d %d) \n", total_points[i].x, total_points[i].y);
     }
-#pragma omp parallel for shared(nodes, size, msg_start, msg_end, total_points, paths_capacity, DEBUG, rank) default(none) collapse(2)
+
+    const int max_pairs = msg_start->num_exit_points * (msg_start->num_exit_points - 1) / 2;  // Combination formula nC2
+    PointPair* valid_pairs = malloc(max_pairs * sizeof(PointPair));
+    int valid_pair_count = 0;
+
+    // Pre-calculate valid combinations where i < j
     for (int i = 0; i < msg_start->num_exit_points; i++) {
         for (int j = i + 1; j < msg_start->num_exit_points; j++) {
-            if (
-                (&total_points[i] != NULL && &total_points[j] != NULL)
-                && (is_valid_exit_point_with_constraint(total_points[i], size) && is_valid_exit_point_with_constraint(total_points[j], size))
-                && i != j
-            ) {
-                printf_debug("[THREAD %d] Finding path %d between (%d:%d) -> (%d:%d)\n", omp_get_thread_num(), msg_end->num_of_paths + 1, total_points[i].x, total_points[i].y, total_points[j].x, total_points[j].y);
-
-                Node* l_nodes = malloc(msg_start->chunk_w * msg_start->chunk_h * sizeof(Node));
-                memcpy(l_nodes, nodes, msg_start->chunk_w * msg_start->chunk_h * sizeof(Node));
-
-                ChunkPath *new_path = compute_path(
-                        l_nodes,
-                        NULL,
-                        msg_start->chunk_w,
-                        msg_start->chunk_h,
-                        total_points[i],
-                        total_points[j],
-                        compute_weight_nodes,
-                        compute_heuristic_nodes,
-                        get_neighbours_nodes,
-                        reassemble_final_path_nodes
-                    );
-#pragma omp critical
-                {
-                    if (new_path->n_nodes > 0) {
-                        if (msg_end->num_of_paths == msg_start->num_exit_points || msg_end->num_of_paths == paths_capacity) {
-                            msg_end->paths = realloc(msg_end->paths, (msg_end->num_of_paths * 2) * sizeof(ChunkPath));
-                            paths_capacity = msg_end->num_of_paths * 2;
-                        }
-                        msg_end->paths[msg_end->num_of_paths] = *new_path;
-                        msg_end->num_of_paths += 1;
-                    }
+            if (is_valid_exit_point_with_constraint(total_points[i], size) &&
+                is_valid_exit_point_with_constraint(total_points[j], size)) {
+                valid_pairs[valid_pair_count++] = (PointPair){i, j};
                 }
+        }
+    }
+
+#pragma omp parallel for shared(nodes, size, msg_start, msg_end, total_points, paths_capacity, DEBUG, rank, valid_pairs, valid_pair_count) default(none)
+    for (int k = 0; k < valid_pair_count; k++) {
+        const int i = valid_pairs[k].i;
+        const int j = valid_pairs[k].j;
+
+        Node* l_nodes = malloc(msg_start->chunk_w * msg_start->chunk_h * sizeof(Node));
+        memcpy(l_nodes, nodes, msg_start->chunk_w * msg_start->chunk_h * sizeof(Node));
+
+        ChunkPath *new_path = compute_path(
+                l_nodes,
+                NULL,
+                msg_start->chunk_w,
+                msg_start->chunk_h,
+                total_points[i],
+                total_points[j],
+                compute_weight_nodes,
+                compute_heuristic_nodes,
+                get_neighbours_nodes,
+                reassemble_final_path_nodes
+            );
+
+#pragma omp critical
+        {
+            if (new_path->n_nodes > 0) {
+                if (msg_end->num_of_paths == msg_start->num_exit_points || msg_end->num_of_paths == paths_capacity) {
+                    msg_end->paths = realloc(msg_end->paths, (msg_end->num_of_paths * 2) * sizeof(ChunkPath));
+                    paths_capacity = msg_end->num_of_paths * 2;
+                }
+                msg_end->paths[msg_end->num_of_paths] = *new_path;
+                msg_end->num_of_paths += 1;
             }
         }
     }
+
+    free(valid_pairs);
 
     print_paths(msg_end, rank);
     free(total_points);
