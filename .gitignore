@@ -54,3 +54,6 @@ dkms.conf
 
 # Algorithm output
 output/
+
+# Logs
+*.log

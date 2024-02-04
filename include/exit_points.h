@@ -1,5 +1,5 @@
 #include <tic.h>
-#include "../include/print.h"
+#include "../include/utility.h"
 
 #ifndef PARALLEL_A_STAR_NEW_EXIT_POINTS_H
 #define PARALLEL_A_STAR_NEW_EXIT_POINTS_H
