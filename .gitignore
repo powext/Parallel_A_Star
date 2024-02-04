@@ -51,3 +51,9 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+# Algorithm output
+output/
+
+# Logs
+*.log

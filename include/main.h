@@ -11,7 +11,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-#include </opt/homebrew/opt/libomp/include/omp.h>
+#include "omp.h"
 
 #include "../src/priority_queue.c"
 #include "../src/compute_distance.c"

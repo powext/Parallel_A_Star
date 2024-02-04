@@ -7,9 +7,9 @@
 
 #include <stdbool.h>
 #include "comm.h"
+#include "adjlist.h"
 
-double compute_total_distance();
-double compute_heuristic(Node a, Node b);
+double compute_heuristic_nodes(Node* a, Node* b);
 
 
 #endif //PARALLEL_A_STAR_COMPUTE_DISTANCE_H

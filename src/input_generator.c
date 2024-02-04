@@ -7,6 +7,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <stdbool.h>
+
+#include "../include/comm.h"
 
 #define GREY  "\x1B[38;5;236m"
 #define RED   "\x1B[38;5;160m"
@@ -14,29 +17,26 @@
 #define WHITE "\x1B[38;5;15m"
 #define RESET "\x1B[0m"
 
-#define MAX_OBSTACLES ((HEIGHT * WIDTH) / 3)
+bool DEBUG = false;
 
-extern int HEIGHT;
-extern int WIDTH;
-
-void init_matrix(char (*matrix)[HEIGHT]) {
+void init_matrix(char** matrix, int size) {
     int i, j;
-    for (i = 0; i < HEIGHT; i++) {
-        for (j = 0; j < WIDTH; j++) {
+    for (i = 0; i < size; i++) {
+        for (j = 0; j < size; j++) {
             matrix[i][j] = '+';
         }
     }
 }
 
-void set_start(char (*matrix)[HEIGHT], int x, int y) {
+void set_start(char** matrix, int x, int y) {
     matrix[y][x] = 'S';
 }
 
-void set_end(char (*matrix)[HEIGHT], int x, int y) {
+void set_end(char** matrix, int x, int y) {
     matrix[y][x] = 'E';
 }
 
-void set_obstacle(char (*matrix)[HEIGHT], int x, int y) {
+void set_obstacle(char** matrix, int x, int y) {
     matrix[y][x] = '-';
 }
 
@@ -51,25 +51,115 @@ void print_with_colors(char c) {
         printf(WHITE "%c" RESET, c);
 }
 
-void generate_input(char (*matrix)[HEIGHT]) {
+double compute_heuristic_tmp(Coordinates a, Coordinates b){
+    int dx = abs(a.x - b.x);
+    int dy = abs(a.y - b.y);
+    return (double) (dx + dy);
+}
+
+NodeType get_type(char node){
+    if (node == '+')
+        return cell;
+    else if (node == 'S')
+        return start;
+    else if (node == 'E')
+        return end;
+    else if (node == '-')
+        return  obstacle;
+}
+
+/*bool test_matrix(char** matrix, int size, int start_x, int start_y, int end_x, int end_y){
+    Coordinates start = {start_x, start_y};
+    Coordinates end = {end_x, end_y};
+
+    Node* tmp_matrix = malloc(size*size*sizeof(Node*));
+
+    for(int i = 0; i < size; i++){
+        for(int j = 0; j < size; j++){
+            Node* tmp = malloc(sizeof(Node));
+            tmp->id = i*size+j;
+            tmp->type = get_type(matrix[i][j]);
+            tmp->coordinates.x = i;
+            tmp->coordinates.y = j;
+            tmp->distance = INT16_MAX-2;
+            tmp->heuristic = compute_heuristic_tmp(tmp->coordinates, end);
+            tmp_matrix[i*size + j] = *tmp;
+        }
+    }
+
+    ChunkPath* path = compute_path(tmp_matrix,
+                                   NULL,
+                                   size,
+                                   size,
+                                   start,
+                                   end,
+                                   compute_weight_nodes,
+                                   compute_heuristic_nodes,
+                                   get_neighbours_nodes,
+                                   reassemble_final_path_nodes);
+    if (path->n_nodes > 0){
+        printf("Path found!\n");
+        return true;
+    }
+
+    printf("Path empty!\n");
+    return false;
+}*/
+
+void write_matrix(char** matrix, int size){
+    printf("Writing file!\n");
+    char dimension[9];
+    char filename[50];
+    sprintf(dimension, "%d", size);
+    printf("Getting filename!\n");
+    sprintf(filename, "data/matrix_%s.txt", dimension);
+
+    printf("Opening file!\n");
+    FILE *file = fopen(filename, "w");
+
+    if (file == NULL) {
+        perror("Error opening file");
+        exit(1); // Exit with an error code
+    }
+
+    printf("Writing content!\n");
+    // Write the content of the matrix to the file
+    for (int i = 0; i < size; i++) {
+        for (int j = 0; j < size; j++) {
+            fprintf(file, "%c", matrix[i][j]);
+        }
+        fprintf(file, "\n"); // Move to the next line
+    }
+
+    // Close the file
+    fclose(file);
+    printf("Wrote file!\n");
+}
+
+void generate_input(int size) {
     int i;
     srand(time(NULL));
+    int max_obstacle = size*size / 3;
+    char** matrix = malloc(size*sizeof(char*));
+    for(int a = 0; a < size; a++){
+        matrix[a] = malloc(size* sizeof(char));
+    }
 
-    init_matrix(matrix);
+    init_matrix(matrix, size);
 
-    int start_x = rand() % WIDTH;
-    int start_y = rand() % HEIGHT;
+    int start_x = rand() % size;
+    int start_y = rand() % size;
 
-    int end_x = rand() % WIDTH;
-    int end_y = rand() % HEIGHT;
+    int end_x = rand() % size;
+    int end_y = rand() % size;
 
     set_start(matrix, start_x, start_y);
     set_end(matrix, end_x, end_y);
 
     int obstacle_count = 0;
-    while (obstacle_count < MAX_OBSTACLES) {
-        int obstacle_x = rand() % WIDTH;
-        int obstacle_y = rand() % HEIGHT;
+    while (obstacle_count < max_obstacle) {
+        int obstacle_x = rand() % size;
+        int obstacle_y = rand() % size;
 
         if (matrix[obstacle_y][obstacle_x] == '+') {
             set_obstacle(matrix, obstacle_x, obstacle_y);
@@ -77,12 +167,35 @@ void generate_input(char (*matrix)[HEIGHT]) {
         }
     }
 
-    for (i = 0; i < HEIGHT; i++) {
-        for (int j = 0; j < WIDTH; j++) {
+    /*for (i = 0; i < size; i++) {
+        for (int j = 0; j < size; j++) {
             print_with_colors(matrix[i][j]);
         }
         printf("\n");
+    }*/
+
+//    if(test_matrix(matrix, size, start_x, start_y, end_x, end_y)){
+    write_matrix(matrix, size);
+    printf("%d:%d -> %d:%d\n", start_x, start_y, end_x, end_y);
+//    }
+//    else{
+//        for(int a = 0; a < size; a++){
+//            free(matrix[a]);
+//        }
+//        free(matrix);
+//        generate_input(size);
+//    }
+}
+
+int main(int argc, char** argv){
+    if (argc < 2){
+        printf("Error! Usage should be of ./script x where x is the side dimension\n");
+        exit(1);
     }
 
-    return;
+    char* dimension = argv[1];
+    int dimensions = atoi(dimension);
+
+    generate_input(dimensions);
+    return 0;
 }

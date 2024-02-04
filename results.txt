@@ -1,0 +1,1001 @@
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=1, PROCESS_NUM=1, OMP_NUM_THREADS=1
+556775.hpc-head-n1.unitn.it
+556776.hpc-head-n1.unitn.it
+556777.hpc-head-n1.unitn.it
+557152.hpc-head-n1.unitn.it
+557153.hpc-head-n1.unitn.it
+557154.hpc-head-n1.unitn.it
+557155.hpc-head-n1.unitn.it
+557156.hpc-head-n1.unitn.it
+557157.hpc-head-n1.unitn.it
+557158.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=4, PROCESS_NUM=1, OMP_NUM_THREADS=4
+557159.hpc-head-n1.unitn.it
+557160.hpc-head-n1.unitn.it
+557162.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=1, PROCESS_NUM=16, OMP_NUM_THREADS=4
+557163.hpc-head-n1.unitn.it
+557165.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=1, PROCESS_NUM=4, OMP_NUM_THREADS=8
+557166.hpc-head-n1.unitn.it
+557167.hpc-head-n1.unitn.it
+557168.hpc-head-n1.unitn.it
+557169.hpc-head-n1.unitn.it
+557170.hpc-head-n1.unitn.it
+557172.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=1, PROCESS_NUM=16, OMP_NUM_THREADS=8
+557174.hpc-head-n1.unitn.it
+557175.hpc-head-n1.unitn.it
+557176.hpc-head-n1.unitn.it
+557177.hpc-head-n1.unitn.it
+557178.hpc-head-n1.unitn.it
+557179.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=1, PROCESS_NUM=16, OMP_NUM_THREADS=1
+557180.hpc-head-n1.unitn.it
+557181.hpc-head-n1.unitn.it
+557182.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=2, PROCESS_NUM=1, OMP_NUM_THREADS=1
+557183.hpc-head-n1.unitn.it
+557184.hpc-head-n1.unitn.it
+557185.hpc-head-n1.unitn.it
+557186.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=4, PROCESS_NUM=1, OMP_NUM_THREADS=8
+557187.hpc-head-n1.unitn.it
+557188.hpc-head-n1.unitn.it
+557189.hpc-head-n1.unitn.it
+557190.hpc-head-n1.unitn.it
+557191.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=1, PROCESS_NUM=16, OMP_NUM_THREADS=2
+557192.hpc-head-n1.unitn.it
+557193.hpc-head-n1.unitn.it
+557194.hpc-head-n1.unitn.it
+557196.hpc-head-n1.unitn.it
+557197.hpc-head-n1.unitn.it
+557198.hpc-head-n1.unitn.it
+557199.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=4, PROCESS_NUM=4, OMP_NUM_THREADS=1
+557200.hpc-head-n1.unitn.it
+557201.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=2, PROCESS_NUM=1, OMP_NUM_THREADS=2
+557203.hpc-head-n1.unitn.it
+557204.hpc-head-n1.unitn.it
+557205.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=1, PROCESS_NUM=16, OMP_NUM_THREADS=4
+557206.hpc-head-n1.unitn.it
+557207.hpc-head-n1.unitn.it
+557209.hpc-head-n1.unitn.it
+557210.hpc-head-n1.unitn.it
+557211.hpc-head-n1.unitn.it
+557212.hpc-head-n1.unitn.it
+557214.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=2, PROCESS_NUM=1, OMP_NUM_THREADS=4
+557215.hpc-head-n1.unitn.it
+557216.hpc-head-n1.unitn.it
+557217.hpc-head-n1.unitn.it
+557218.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=1, PROCESS_NUM=16, OMP_NUM_THREADS=8
+557219.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=4, PROCESS_NUM=4, OMP_NUM_THREADS=2
+557220.hpc-head-n1.unitn.it
+557221.hpc-head-n1.unitn.it
+557222.hpc-head-n1.unitn.it
+557223.hpc-head-n1.unitn.it
+557224.hpc-head-n1.unitn.it
+557225.hpc-head-n1.unitn.it
+557226.hpc-head-n1.unitn.it
+557227.hpc-head-n1.unitn.it
+557228.hpc-head-n1.unitn.it
+557230.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=2, PROCESS_NUM=1, OMP_NUM_THREADS=8
+557231.hpc-head-n1.unitn.it
+557232.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=2, PROCESS_NUM=1, OMP_NUM_THREADS=1
+557233.hpc-head-n1.unitn.it
+557234.hpc-head-n1.unitn.it
+557235.hpc-head-n1.unitn.it
+557236.hpc-head-n1.unitn.it
+557237.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=4, PROCESS_NUM=4, OMP_NUM_THREADS=4
+557238.hpc-head-n1.unitn.it
+557239.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=2, PROCESS_NUM=1, OMP_NUM_THREADS=2
+557240.hpc-head-n1.unitn.it
+557241.hpc-head-n1.unitn.it
+557243.hpc-head-n1.unitn.it
+557244.hpc-head-n1.unitn.it
+557245.hpc-head-n1.unitn.it
+557246.hpc-head-n1.unitn.it
+557247.hpc-head-n1.unitn.it
+557249.hpc-head-n1.unitn.it
+557250.hpc-head-n1.unitn.it
+DES=1, CPUS=2, PROCESS_NUM=4, OMP_NUM_THREADS=1
+557251.hpc-head-n1.unitn.it
+557252.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=4, PROCESS_NUM=4, OMP_NUM_THREADS=8
+557253.hpc-head-n1.unitn.it
+557254.hpc-head-n1.unitn.it
+557255.hpc-head-n1.unitn.it
+557256.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=2, PROCESS_NUM=1, OMP_NUM_THREADS=4
+557258.hpc-head-n1.unitn.it
+557259.hpc-head-n1.unitn.it
+557260.hpc-head-n1.unitn.it
+557261.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=2, PROCESS_NUM=4, OMP_NUM_THREADS=2
+557262.hpc-head-n1.unitn.it
+557263.hpc-head-n1.unitn.it
+557265.hpc-head-n1.unitn.it
+557267.hpc-head-n1.unitn.it
+557266.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=2, PROCESS_NUM=1, OMP_NUM_THREADS=8
+557268.hpc-head-n1.unitn.it
+557269.hpc-head-n1.unitn.it
+557270.hpc-head-n1.unitn.it
+557271.hpc-head-n1.unitn.it
+557272.hpc-head-n1.unitn.it
+557273.hpc-head-n1.unitn.it
+557274.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=4, PROCESS_NUM=16, OMP_NUM_THREADS=1
+557275.hpc-head-n1.unitn.it
+557276.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=2, PROCESS_NUM=4, OMP_NUM_THREADS=4
+557277.hpc-head-n1.unitn.it
+557278.hpc-head-n1.unitn.it
+557279.hpc-head-n1.unitn.it
+557280.hpc-head-n1.unitn.it
+557281.hpc-head-n1.unitn.it
+557282.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=2, PROCESS_NUM=4, OMP_NUM_THREADS=1
+557283.hpc-head-n1.unitn.it
+557284.hpc-head-n1.unitn.it
+557285.hpc-head-n1.unitn.it
+557286.hpc-head-n1.unitn.it
+557288.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=2, PROCESS_NUM=4, OMP_NUM_THREADS=8
+557289.hpc-head-n1.unitn.it
+557290.hpc-head-n1.unitn.it
+557291.hpc-head-n1.unitn.it
+557292.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=4, PROCESS_NUM=16, OMP_NUM_THREADS=2
+557294.hpc-head-n1.unitn.it
+557295.hpc-head-n1.unitn.it
+557296.hpc-head-n1.unitn.it
+557297.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=2, PROCESS_NUM=16, OMP_NUM_THREADS=1
+557298.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=2, PROCESS_NUM=4, OMP_NUM_THREADS=2
+557300.hpc-head-n1.unitn.it
+557302.hpc-head-n1.unitn.it
+557303.hpc-head-n1.unitn.it
+557304.hpc-head-n1.unitn.it
+557305.hpc-head-n1.unitn.it
+557307.hpc-head-n1.unitn.it
+557308.hpc-head-n1.unitn.it
+557309.hpc-head-n1.unitn.it
+557310.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=2, PROCESS_NUM=16, OMP_NUM_THREADS=2
+557311.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=4, PROCESS_NUM=16, OMP_NUM_THREADS=4
+557313.hpc-head-n1.unitn.it
+557314.hpc-head-n1.unitn.it
+557315.hpc-head-n1.unitn.it
+557316.hpc-head-n1.unitn.it
+557317.hpc-head-n1.unitn.it
+557318.hpc-head-n1.unitn.it
+557321.hpc-head-n1.unitn.it
+557320.hpc-head-n1.unitn.it
+557322.hpc-head-n1.unitn.it
+557324.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=4, PROCESS_NUM=16, OMP_NUM_THREADS=8
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=2, PROCESS_NUM=16, OMP_NUM_THREADS=4
+557325.hpc-head-n1.unitn.it
+557326.hpc-head-n1.unitn.it
+557327.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=2, PROCESS_NUM=4, OMP_NUM_THREADS=4
+557328.hpc-head-n1.unitn.it
+557329.hpc-head-n1.unitn.it
+557330.hpc-head-n1.unitn.it
+557331.hpc-head-n1.unitn.it
+557332.hpc-head-n1.unitn.it
+557333.hpc-head-n1.unitn.it
+557335.hpc-head-n1.unitn.it
+557336.hpc-head-n1.unitn.it
+557338.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=8, PROCESS_NUM=1, OMP_NUM_THREADS=1
+557339.hpc-head-n1.unitn.it
+DES=1, CPUS=2, PROCESS_NUM=16, OMP_NUM_THREADS=8
+557340.hpc-head-n1.unitn.it
+557341.hpc-head-n1.unitn.it
+557342.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=2, PROCESS_NUM=4, OMP_NUM_THREADS=8
+557343.hpc-head-n1.unitn.it
+557344.hpc-head-n1.unitn.it
+557345.hpc-head-n1.unitn.it
+557346.hpc-head-n1.unitn.it
+557347.hpc-head-n1.unitn.it
+557349.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=4, PROCESS_NUM=1, OMP_NUM_THREADS=1
+557350.hpc-head-n1.unitn.it
+557351.hpc-head-n1.unitn.it
+557352.hpc-head-n1.unitn.it
+557353.hpc-head-n1.unitn.it
+557354.hpc-head-n1.unitn.it
+557355.hpc-head-n1.unitn.it
+557357.hpc-head-n1.unitn.it
+557358.hpc-head-n1.unitn.it
+557359.hpc-head-n1.unitn.it
+DES=1, CPUS=2, PROCESS_NUM=16, OMP_NUM_THREADS=1
+557360.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=8, PROCESS_NUM=1, OMP_NUM_THREADS=2
+557362.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=4, PROCESS_NUM=1, OMP_NUM_THREADS=2
+557364.hpc-head-n1.unitn.it
+557365.hpc-head-n1.unitn.it
+557367.hpc-head-n1.unitn.it
+557368.hpc-head-n1.unitn.it
+557370.hpc-head-n1.unitn.it
+557497.hpc-head-n1.unitn.it
+557496.hpc-head-n1.unitn.it
+557498.hpc-head-n1.unitn.it
+557499.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=2, PROCESS_NUM=16, OMP_NUM_THREADS=2
+557500.hpc-head-n1.unitn.it
+557502.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=8, PROCESS_NUM=1, OMP_NUM_THREADS=4
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=4, PROCESS_NUM=1, OMP_NUM_THREADS=4
+557503.hpc-head-n1.unitn.it
+557505.hpc-head-n1.unitn.it
+557506.hpc-head-n1.unitn.it
+557507.hpc-head-n1.unitn.it
+557508.hpc-head-n1.unitn.it
+557509.hpc-head-n1.unitn.it
+557510.hpc-head-n1.unitn.it
+557511.hpc-head-n1.unitn.it
+557513.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=2, PROCESS_NUM=16, OMP_NUM_THREADS=4
+557514.hpc-head-n1.unitn.it
+557515.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=4, PROCESS_NUM=1, OMP_NUM_THREADS=8
+557516.hpc-head-n1.unitn.it
+557517.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=8, PROCESS_NUM=1, OMP_NUM_THREADS=8
+557518.hpc-head-n1.unitn.it
+557519.hpc-head-n1.unitn.it
+557520.hpc-head-n1.unitn.it
+557521.hpc-head-n1.unitn.it
+557522.hpc-head-n1.unitn.it
+557523.hpc-head-n1.unitn.it
+557524.hpc-head-n1.unitn.it
+557525.hpc-head-n1.unitn.it
+557526.hpc-head-n1.unitn.it
+557528.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=8, PROCESS_NUM=4, OMP_NUM_THREADS=1
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=4, PROCESS_NUM=4, OMP_NUM_THREADS=1
+557529.hpc-head-n1.unitn.it
+557531.hpc-head-n1.unitn.it
+557532.hpc-head-n1.unitn.it
+557533.hpc-head-n1.unitn.it
+557534.hpc-head-n1.unitn.it
+557535.hpc-head-n1.unitn.it
+557536.hpc-head-n1.unitn.it
+557537.hpc-head-n1.unitn.it
+557538.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=4, PROCESS_NUM=4, OMP_NUM_THREADS=2
+557539.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=2, PROCESS_NUM=16, OMP_NUM_THREADS=8
+557540.hpc-head-n1.unitn.it
+557541.hpc-head-n1.unitn.it
+557543.hpc-head-n1.unitn.it
+557542.hpc-head-n1.unitn.it
+557544.hpc-head-n1.unitn.it
+557545.hpc-head-n1.unitn.it
+557546.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=8, PROCESS_NUM=4, OMP_NUM_THREADS=2
+557547.hpc-head-n1.unitn.it
+557548.hpc-head-n1.unitn.it
+557549.hpc-head-n1.unitn.it
+557550.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=4, PROCESS_NUM=4, OMP_NUM_THREADS=4
+557551.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=4, PROCESS_NUM=1, OMP_NUM_THREADS=1
+557552.hpc-head-n1.unitn.it
+557554.hpc-head-n1.unitn.it
+557553.hpc-head-n1.unitn.it
+557555.hpc-head-n1.unitn.it
+557556.hpc-head-n1.unitn.it
+557557.hpc-head-n1.unitn.it
+557558.hpc-head-n1.unitn.it
+557560.hpc-head-n1.unitn.it
+557561.hpc-head-n1.unitn.it
+557563.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=4, PROCESS_NUM=4, OMP_NUM_THREADS=8
+557564.hpc-head-n1.unitn.it
+557565.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=8, PROCESS_NUM=4, OMP_NUM_THREADS=4
+557566.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=4, PROCESS_NUM=1, OMP_NUM_THREADS=2
+557567.hpc-head-n1.unitn.it
+557568.hpc-head-n1.unitn.it
+557569.hpc-head-n1.unitn.it
+557570.hpc-head-n1.unitn.it
+557571.hpc-head-n1.unitn.it
+557574.hpc-head-n1.unitn.it
+557573.hpc-head-n1.unitn.it
+557575.hpc-head-n1.unitn.it
+557576.hpc-head-n1.unitn.it
+557577.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=8, PROCESS_NUM=4, OMP_NUM_THREADS=8
+557578.hpc-head-n1.unitn.it
+557579.hpc-head-n1.unitn.it
+557580.hpc-head-n1.unitn.it
+557581.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=4, PROCESS_NUM=1, OMP_NUM_THREADS=4
+557582.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=4, PROCESS_NUM=16, OMP_NUM_THREADS=1
+557583.hpc-head-n1.unitn.it
+557584.hpc-head-n1.unitn.it
+557585.hpc-head-n1.unitn.it
+557586.hpc-head-n1.unitn.it
+557587.hpc-head-n1.unitn.it
+557588.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=8, PROCESS_NUM=16, OMP_NUM_THREADS=1
+557590.hpc-head-n1.unitn.it
+557592.hpc-head-n1.unitn.it
+557593.hpc-head-n1.unitn.it
+557594.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=4, PROCESS_NUM=16, OMP_NUM_THREADS=2
+557595.hpc-head-n1.unitn.it
+557596.hpc-head-n1.unitn.it
+557597.hpc-head-n1.unitn.it
+557598.hpc-head-n1.unitn.it
+557599.hpc-head-n1.unitn.it
+557600.hpc-head-n1.unitn.it
+557601.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=4, PROCESS_NUM=1, OMP_NUM_THREADS=8
+557602.hpc-head-n1.unitn.it
+557603.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=8, PROCESS_NUM=16, OMP_NUM_THREADS=2
+557605.hpc-head-n1.unitn.it
+557606.hpc-head-n1.unitn.it
+557607.hpc-head-n1.unitn.it
+557608.hpc-head-n1.unitn.it
+557609.hpc-head-n1.unitn.it
+557610.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=4, PROCESS_NUM=16, OMP_NUM_THREADS=4
+557611.hpc-head-n1.unitn.it
+557612.hpc-head-n1.unitn.it
+557613.hpc-head-n1.unitn.it
+557614.hpc-head-n1.unitn.it
+557615.hpc-head-n1.unitn.it
+557616.hpc-head-n1.unitn.it
+557617.hpc-head-n1.unitn.it
+557618.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=8, PROCESS_NUM=16, OMP_NUM_THREADS=4
+557619.hpc-head-n1.unitn.it
+557620.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=4, PROCESS_NUM=16, OMP_NUM_THREADS=8
+557621.hpc-head-n1.unitn.it
+557622.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=4, PROCESS_NUM=4, OMP_NUM_THREADS=1
+557623.hpc-head-n1.unitn.it
+557624.hpc-head-n1.unitn.it
+557625.hpc-head-n1.unitn.it
+557626.hpc-head-n1.unitn.it
+557627.hpc-head-n1.unitn.it
+557628.hpc-head-n1.unitn.it
+557629.hpc-head-n1.unitn.it
+557630.hpc-head-n1.unitn.it
+557631.hpc-head-n1.unitn.it
+557632.hpc-head-n1.unitn.it
+557633.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=8, PROCESS_NUM=1, OMP_NUM_THREADS=1
+557634.hpc-head-n1.unitn.it
+557636.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=4, PROCESS_NUM=4, OMP_NUM_THREADS=2
+557637.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=8, PROCESS_NUM=16, OMP_NUM_THREADS=8
+557638.hpc-head-n1.unitn.it
+557639.hpc-head-n1.unitn.it
+557640.hpc-head-n1.unitn.it
+557641.hpc-head-n1.unitn.it
+557642.hpc-head-n1.unitn.it
+557643.hpc-head-n1.unitn.it
+557644.hpc-head-n1.unitn.it
+557645.hpc-head-n1.unitn.it
+557647.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=4, PROCESS_NUM=4, OMP_NUM_THREADS=4
+557649.hpc-head-n1.unitn.it
+557650.hpc-head-n1.unitn.it
+557651.hpc-head-n1.unitn.it
+557652.hpc-head-n1.unitn.it
+ES=1, CPUS=1, PROCESS_NUM=1, OMP_NUM_THREADS=1
+557654.hpc-head-n1.unitn.it
+557655.hpc-head-n1.unitn.it
+DES=1, CPUS=8, PROCESS_NUM=1, OMP_NUM_THREADS=2
+557656.hpc-head-n1.unitn.it
+557658.hpc-head-n1.unitn.it
+557662.hpc-head-n1.unitn.it
+557663.hpc-head-n1.unitn.it
+557664.hpc-head-n1.unitn.it
+557665.hpc-head-n1.unitn.it
+557666.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=4, PROCESS_NUM=4, OMP_NUM_THREADS=8
+557667.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=256, NODES=1, CPUS=1, PROCESS_NUM=1, OMP_NUM_THREADS=2
+557669.hpc-head-n1.unitn.it
+557670.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=8, PROCESS_NUM=1, OMP_NUM_THREADS=4
+557671.hpc-head-n1.unitn.it
+557672.hpc-head-n1.unitn.it
+557673.hpc-head-n1.unitn.it
+557674.hpc-head-n1.unitn.it
+557675.hpc-head-n1.unitn.it
+557676.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=256, NODES=1, CPUS=1, PROCESS_NUM=1, OMP_NUM_THREADS=4
+557677.hpc-head-n1.unitn.it
+557685.hpc-head-n1.unitn.it
+557684.hpc-head-n1.unitn.it
+557686.hpc-head-n1.unitn.it
+557688.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=8, PROCESS_NUM=1, OMP_NUM_THREADS=8
+557689.hpc-head-n1.unitn.it
+557690.hpc-head-n1.unitn.it
+557691.hpc-head-n1.unitn.it
+557692.hpc-head-n1.unitn.it
+557693.hpc-head-n1.unitn.it
+557694.hpc-head-n1.unitn.it
+557696.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=4, PROCESS_NUM=16, OMP_NUM_THREADS=1
+557697.hpc-head-n1.unitn.it
+557698.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=256, NODES=1, CPUS=1, PROCESS_NUM=1, OMP_NUM_THREADS=8
+557699.hpc-head-n1.unitn.it
+557701.hpc-head-n1.unitn.it
+557702.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=8, PROCESS_NUM=4, OMP_NUM_THREADS=1
+557703.hpc-head-n1.unitn.it
+557705.hpc-head-n1.unitn.it
+557706.hpc-head-n1.unitn.it
+557707.hpc-head-n1.unitn.it
+557709.hpc-head-n1.unitn.it
+557710.hpc-head-n1.unitn.it
+557711.hpc-head-n1.unitn.it
+557713.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=256, NODES=1, CPUS=1, PROCESS_NUM=4, OMP_NUM_THREADS=1
+557714.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=4, PROCESS_NUM=16, OMP_NUM_THREADS=2
+557717.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=8, PROCESS_NUM=4, OMP_NUM_THREADS=2
+557718.hpc-head-n1.unitn.it
+557719.hpc-head-n1.unitn.it
+557720.hpc-head-n1.unitn.it
+557721.hpc-head-n1.unitn.it
+557722.hpc-head-n1.unitn.it
+557723.hpc-head-n1.unitn.it
+557724.hpc-head-n1.unitn.it
+557725.hpc-head-n1.unitn.it
+557726.hpc-head-n1.unitn.it
+557727.hpc-head-n1.unitn.it
+557728.hpc-head-n1.unitn.it
+557729.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=4, PROCESS_NUM=16, OMP_NUM_THREADS=4
+557730.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=8, PROCESS_NUM=4, OMP_NUM_THREADS=4
+557731.hpc-head-n1.unitn.it
+557732.hpc-head-n1.unitn.it
+557735.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=256, NODES=1, CPUS=1, PROCESS_NUM=4, OMP_NUM_THREADS=2
+557736.hpc-head-n1.unitn.it
+557737.hpc-head-n1.unitn.it
+557738.hpc-head-n1.unitn.it
+557739.hpc-head-n1.unitn.it
+557740.hpc-head-n1.unitn.it
+557741.hpc-head-n1.unitn.it
+557742.hpc-head-n1.unitn.it
+557743.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=4, PROCESS_NUM=16, OMP_NUM_THREADS=8
+557744.hpc-head-n1.unitn.it
+557745.hpc-head-n1.unitn.it
+557748.hpc-head-n1.unitn.it
+557749.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=256, NODES=1, CPUS=1, PROCESS_NUM=4, OMP_NUM_THREADS=4
+557752.hpc-head-n1.unitn.it
+557753.hpc-head-n1.unitn.it
+DES=1, CPUS=8, PROCESS_NUM=4, OMP_NUM_THREADS=8
+557754.hpc-head-n1.unitn.it
+557755.hpc-head-n1.unitn.it
+557756.hpc-head-n1.unitn.it
+557757.hpc-head-n1.unitn.it
+557758.hpc-head-n1.unitn.it
+557759.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=8, PROCESS_NUM=1, OMP_NUM_THREADS=1
+557763.hpc-head-n1.unitn.it
+557762.hpc-head-n1.unitn.it
+557764.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=256, NODES=1, CPUS=1, PROCESS_NUM=4, OMP_NUM_THREADS=8
+557765.hpc-head-n1.unitn.it
+557768.hpc-head-n1.unitn.it
+557769.hpc-head-n1.unitn.it
+557770.hpc-head-n1.unitn.it
+557771.hpc-head-n1.unitn.it
+557772.hpc-head-n1.unitn.it
+557773.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=8, PROCESS_NUM=1, OMP_NUM_THREADS=2
+557775.hpc-head-n1.unitn.it
+557776.hpc-head-n1.unitn.it
+DES=1, CPUS=8, PROCESS_NUM=16, OMP_NUM_THREADS=1
+557777.hpc-head-n1.unitn.it
+557778.hpc-head-n1.unitn.it
+557779.hpc-head-n1.unitn.it
+557780.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=256, NODES=1, CPUS=1, PROCESS_NUM=16, OMP_NUM_THREADS=1
+557785.hpc-head-n1.unitn.it
+557787.hpc-head-n1.unitn.it
+557788.hpc-head-n1.unitn.it
+557789.hpc-head-n1.unitn.it
+557790.hpc-head-n1.unitn.it
+557791.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=8, PROCESS_NUM=1, OMP_NUM_THREADS=4
+557792.hpc-head-n1.unitn.it
+557793.hpc-head-n1.unitn.it
+557794.hpc-head-n1.unitn.it
+557795.hpc-head-n1.unitn.it
+557796.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=256, NODES=1, CPUS=1, PROCESS_NUM=16, OMP_NUM_THREADS=2
+557800.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=8, PROCESS_NUM=16, OMP_NUM_THREADS=2
+557801.hpc-head-n1.unitn.it
+557802.hpc-head-n1.unitn.it
+557803.hpc-head-n1.unitn.it
+557804.hpc-head-n1.unitn.it
+557806.hpc-head-n1.unitn.it
+557807.hpc-head-n1.unitn.it
+557808.hpc-head-n1.unitn.it
+557809.hpc-head-n1.unitn.it
+557810.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=256, NODES=1, CPUS=1, PROCESS_NUM=16, OMP_NUM_THREADS=4
+557814.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=8, PROCESS_NUM=16, OMP_NUM_THREADS=4
+557815.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=8, PROCESS_NUM=1, OMP_NUM_THREADS=8
+557816.hpc-head-n1.unitn.it
+557817.hpc-head-n1.unitn.it
+557818.hpc-head-n1.unitn.it
+557819.hpc-head-n1.unitn.it
+557820.hpc-head-n1.unitn.it
+557821.hpc-head-n1.unitn.it
+557822.hpc-head-n1.unitn.it
+557823.hpc-head-n1.unitn.it
+557824.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=256, NODES=1, CPUS=1, PROCESS_NUM=16, OMP_NUM_THREADS=8
+557831.hpc-head-n1.unitn.it
+557832.hpc-head-n1.unitn.it
+557833.hpc-head-n1.unitn.it
+557834.hpc-head-n1.unitn.it
+557835.hpc-head-n1.unitn.it
+557836.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=8, PROCESS_NUM=4, OMP_NUM_THREADS=1
+557837.hpc-head-n1.unitn.it
+557838.hpc-head-n1.unitn.it
+557839.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=8, PROCESS_NUM=16, OMP_NUM_THREADS=8
+557840.hpc-head-n1.unitn.it
+557841.hpc-head-n1.unitn.it
+557842.hpc-head-n1.unitn.it
+557843.hpc-head-n1.unitn.it
+557847.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=256, NODES=1, CPUS=2, PROCESS_NUM=1, OMP_NUM_THREADS=1
+557848.hpc-head-n1.unitn.it
+557850.hpc-head-n1.unitn.it
+557851.hpc-head-n1.unitn.it
+557853.hpc-head-n1.unitn.it
+557854.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=8, PROCESS_NUM=4, OMP_NUM_THREADS=2
+557856.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=1, PROCESS_NUM=1, OMP_NUM_THREADS=1
+557857.hpc-head-n1.unitn.it
+557860.hpc-head-n1.unitn.it
+557861.hpc-head-n1.unitn.it
+557863.hpc-head-n1.unitn.it
+557864.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=256, NODES=1, CPUS=2, PROCESS_NUM=1, OMP_NUM_THREADS=2
+557865.hpc-head-n1.unitn.it
+557867.hpc-head-n1.unitn.it
+557868.hpc-head-n1.unitn.it
+557869.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=8, PROCESS_NUM=4, OMP_NUM_THREADS=4
+557871.hpc-head-n1.unitn.it
+557872.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=1, PROCESS_NUM=1, OMP_NUM_THREADS=2
+557874.hpc-head-n1.unitn.it
+557875.hpc-head-n1.unitn.it
+557878.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=256, NODES=1, CPUS=2, PROCESS_NUM=1, OMP_NUM_THREADS=4
+557879.hpc-head-n1.unitn.it
+557881.hpc-head-n1.unitn.it
+557882.hpc-head-n1.unitn.it
+557884.hpc-head-n1.unitn.it
+557885.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=8, PROCESS_NUM=4, OMP_NUM_THREADS=8
+557886.hpc-head-n1.unitn.it
+557888.hpc-head-n1.unitn.it
+557889.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=1, PROCESS_NUM=1, OMP_NUM_THREADS=4
+557891.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=256, NODES=1, CPUS=2, PROCESS_NUM=1, OMP_NUM_THREADS=8
+557892.hpc-head-n1.unitn.it
+557893.hpc-head-n1.unitn.it
+557896.hpc-head-n1.unitn.it
+557897.hpc-head-n1.unitn.it
+557899.hpc-head-n1.unitn.it
+557900.hpc-head-n1.unitn.it
+557902.hpc-head-n1.unitn.it
+557904.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=8, PROCESS_NUM=16, OMP_NUM_THREADS=1
+557905.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=256, NODES=1, CPUS=2, PROCESS_NUM=4, OMP_NUM_THREADS=1
+557907.hpc-head-n1.unitn.it
+557908.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=1, PROCESS_NUM=1, OMP_NUM_THREADS=8
+557910.hpc-head-n1.unitn.it
+557911.hpc-head-n1.unitn.it
+557914.hpc-head-n1.unitn.it
+557915.hpc-head-n1.unitn.it
+557916.hpc-head-n1.unitn.it
+557918.hpc-head-n1.unitn.it
+557919.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=8, PROCESS_NUM=16, OMP_NUM_THREADS=2
+557921.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=256, NODES=1, CPUS=2, PROCESS_NUM=4, OMP_NUM_THREADS=2
+557925.hpc-head-n1.unitn.it
+557926.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=1, PROCESS_NUM=4, OMP_NUM_THREADS=1
+557928.hpc-head-n1.unitn.it
+557929.hpc-head-n1.unitn.it
+557931.hpc-head-n1.unitn.it
+557932.hpc-head-n1.unitn.it
+557936.hpc-head-n1.unitn.it
+557938.hpc-head-n1.unitn.it
+557939.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=8, PROCESS_NUM=16, OMP_NUM_THREADS=4
+557940.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=256, NODES=1, CPUS=2, PROCESS_NUM=4, OMP_NUM_THREADS=4
+557942.hpc-head-n1.unitn.it
+557943.hpc-head-n1.unitn.it
+557946.hpc-head-n1.unitn.it
+557947.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=1, PROCESS_NUM=4, OMP_NUM_THREADS=2
+557949.hpc-head-n1.unitn.it
+557950.hpc-head-n1.unitn.it
+557952.hpc-head-n1.unitn.it
+557953.hpc-head-n1.unitn.it
+557956.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=256, NODES=1, CPUS=2, PROCESS_NUM=4, OMP_NUM_THREADS=8
+557957.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=1, CPUS=8, PROCESS_NUM=16, OMP_NUM_THREADS=8
+557959.hpc-head-n1.unitn.it
+557960.hpc-head-n1.unitn.it
+557961.hpc-head-n1.unitn.it
+557963.hpc-head-n1.unitn.it
+DES=2, CPUS=1, PROCESS_NUM=4, OMP_NUM_THREADS=4
+557968.hpc-head-n1.unitn.it
+557970.hpc-head-n1.unitn.it
+557971.hpc-head-n1.unitn.it
+557973.hpc-head-n1.unitn.it
+557974.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=256, NODES=1, CPUS=2, PROCESS_NUM=16, OMP_NUM_THREADS=1
+557975.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=1, PROCESS_NUM=1, OMP_NUM_THREADS=1
+557979.hpc-head-n1.unitn.it
+557981.hpc-head-n1.unitn.it
+DES=2, CPUS=1, PROCESS_NUM=4, OMP_NUM_THREADS=8
+557984.hpc-head-n1.unitn.it
+557987.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=1, PROCESS_NUM=1, OMP_NUM_THREADS=2
+557989.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=256, NODES=1, CPUS=2, PROCESS_NUM=16, OMP_NUM_THREADS=2
+557992.hpc-head-n1.unitn.it
+557995.hpc-head-n1.unitn.it
+557998.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=1, PROCESS_NUM=16, OMP_NUM_THREADS=1
+558001.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=1, PROCESS_NUM=1, OMP_NUM_THREADS=4
+558003.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=256, NODES=1, CPUS=2, PROCESS_NUM=16, OMP_NUM_THREADS=4
+558008.hpc-head-n1.unitn.it
+558011.hpc-head-n1.unitn.it
+558014.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=1, PROCESS_NUM=1, OMP_NUM_THREADS=8
+558017.hpc-head-n1.unitn.it
+558019.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=256, NODES=1, CPUS=2, PROCESS_NUM=16, OMP_NUM_THREADS=8
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=1, PROCESS_NUM=16, OMP_NUM_THREADS=2
+558022.hpc-head-n1.unitn.it
+558025.hpc-head-n1.unitn.it
+558028.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=1, PROCESS_NUM=4, OMP_NUM_THREADS=1
+558031.hpc-head-n1.unitn.it
+558033.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=256, NODES=1, CPUS=4, PROCESS_NUM=1, OMP_NUM_THREADS=1
+558036.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=1, PROCESS_NUM=16, OMP_NUM_THREADS=4
+558039.hpc-head-n1.unitn.it
+558042.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=1, PROCESS_NUM=4, OMP_NUM_THREADS=2
+558045.hpc-head-n1.unitn.it
+558048.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=256, NODES=1, CPUS=4, PROCESS_NUM=1, OMP_NUM_THREADS=2
+558051.hpc-head-n1.unitn.it
+558054.hpc-head-n1.unitn.it
+DES=2, CPUS=1, PROCESS_NUM=16, OMP_NUM_THREADS=8
+558056.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=1, PROCESS_NUM=4, OMP_NUM_THREADS=4
+558060.hpc-head-n1.unitn.it
+558063.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=256, NODES=1, CPUS=4, PROCESS_NUM=1, OMP_NUM_THREADS=4
+558066.hpc-head-n1.unitn.it
+558069.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=1, PROCESS_NUM=4, OMP_NUM_THREADS=8
+558072.hpc-head-n1.unitn.it
+DES=2, CPUS=2, PROCESS_NUM=1, OMP_NUM_THREADS=1
+558075.hpc-head-n1.unitn.it
+558077.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=256, NODES=1, CPUS=4, PROCESS_NUM=1, OMP_NUM_THREADS=8
+558078.hpc-head-n1.unitn.it
+558080.hpc-head-n1.unitn.it
+558082.hpc-head-n1.unitn.it
+558083.hpc-head-n1.unitn.it
+558085.hpc-head-n1.unitn.it
+DES=2, CPUS=1, PROCESS_NUM=16, OMP_NUM_THREADS=1
+558088.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=2, PROCESS_NUM=1, OMP_NUM_THREADS=2
+558090.hpc-head-n1.unitn.it
+558091.hpc-head-n1.unitn.it
+558093.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=256, NODES=1, CPUS=4, PROCESS_NUM=4, OMP_NUM_THREADS=1
+558094.hpc-head-n1.unitn.it
+558095.hpc-head-n1.unitn.it
+558097.hpc-head-n1.unitn.it
+558098.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=1, PROCESS_NUM=16, OMP_NUM_THREADS=2
+558100.hpc-head-n1.unitn.it
+558101.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=2, PROCESS_NUM=1, OMP_NUM_THREADS=4
+558103.hpc-head-n1.unitn.it
+558104.hpc-head-n1.unitn.it
+558105.hpc-head-n1.unitn.it
+558106.hpc-head-n1.unitn.it
+558107.hpc-head-n1.unitn.it
+558108.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=256, NODES=1, CPUS=4, PROCESS_NUM=4, OMP_NUM_THREADS=2
+558109.hpc-head-n1.unitn.it
+558110.hpc-head-n1.unitn.it
+558112.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=2, PROCESS_NUM=1, OMP_NUM_THREADS=8
+558114.hpc-head-n1.unitn.it
+558115.hpc-head-n1.unitn.it
+558117.hpc-head-n1.unitn.it
+558118.hpc-head-n1.unitn.it
+558121.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=256, NODES=1, CPUS=4, PROCESS_NUM=4, OMP_NUM_THREADS=4
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=1, PROCESS_NUM=16, OMP_NUM_THREADS=4
+558123.hpc-head-n1.unitn.it
+558124.hpc-head-n1.unitn.it
+558126.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=2, PROCESS_NUM=4, OMP_NUM_THREADS=1
+558127.hpc-head-n1.unitn.it
+558130.hpc-head-n1.unitn.it
+558131.hpc-head-n1.unitn.it
+558133.hpc-head-n1.unitn.it
+558134.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=1, PROCESS_NUM=16, OMP_NUM_THREADS=8
+558137.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=256, NODES=1, CPUS=4, PROCESS_NUM=4, OMP_NUM_THREADS=8
+558138.hpc-head-n1.unitn.it
+558140.hpc-head-n1.unitn.it
+558141.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=2, PROCESS_NUM=4, OMP_NUM_THREADS=2
+558143.hpc-head-n1.unitn.it
+558144.hpc-head-n1.unitn.it
+558146.hpc-head-n1.unitn.it
+558147.hpc-head-n1.unitn.it
+558148.hpc-head-n1.unitn.it
+558150.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=256, NODES=1, CPUS=4, PROCESS_NUM=16, OMP_NUM_THREADS=1
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=2, PROCESS_NUM=1, OMP_NUM_THREADS=1
+558153.hpc-head-n1.unitn.it
+558154.hpc-head-n1.unitn.it
+558155.hpc-head-n1.unitn.it
+558156.hpc-head-n1.unitn.it
+558157.hpc-head-n1.unitn.it
+DES=2, CPUS=2, PROCESS_NUM=4, OMP_NUM_THREADS=4
+558158.hpc-head-n1.unitn.it
+558159.hpc-head-n1.unitn.it
+558160.hpc-head-n1.unitn.it
+558161.hpc-head-n1.unitn.it
+558162.hpc-head-n1.unitn.it
+558163.hpc-head-n1.unitn.it
+558164.hpc-head-n1.unitn.it
+558165.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=2, PROCESS_NUM=1, OMP_NUM_THREADS=2
+558166.hpc-head-n1.unitn.it
+558168.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=2, PROCESS_NUM=4, OMP_NUM_THREADS=8
+558169.hpc-head-n1.unitn.it
+558170.hpc-head-n1.unitn.it
+558171.hpc-head-n1.unitn.it
+558172.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=256, NODES=1, CPUS=4, PROCESS_NUM=16, OMP_NUM_THREADS=2
+558173.hpc-head-n1.unitn.it
+558174.hpc-head-n1.unitn.it
+558175.hpc-head-n1.unitn.it
+558177.hpc-head-n1.unitn.it
+558178.hpc-head-n1.unitn.it
+558180.hpc-head-n1.unitn.it
+558181.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=2, PROCESS_NUM=16, OMP_NUM_THREADS=1
+558182.hpc-head-n1.unitn.it
+558183.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=2, PROCESS_NUM=1, OMP_NUM_THREADS=4
+558184.hpc-head-n1.unitn.it
+558185.hpc-head-n1.unitn.it
+558186.hpc-head-n1.unitn.it
+558187.hpc-head-n1.unitn.it
+558188.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=256, NODES=1, CPUS=4, PROCESS_NUM=16, OMP_NUM_THREADS=4
+558189.hpc-head-n1.unitn.it
+558190.hpc-head-n1.unitn.it
+558191.hpc-head-n1.unitn.it
+558192.hpc-head-n1.unitn.it
+558193.hpc-head-n1.unitn.it
+558194.hpc-head-n1.unitn.it
+558195.hpc-head-n1.unitn.it
+558196.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=2, PROCESS_NUM=16, OMP_NUM_THREADS=2
+558197.hpc-head-n1.unitn.it
+558198.hpc-head-n1.unitn.it
+558199.hpc-head-n1.unitn.it
+558201.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=256, NODES=1, CPUS=4, PROCESS_NUM=16, OMP_NUM_THREADS=8
+558202.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=2, PROCESS_NUM=1, OMP_NUM_THREADS=8
+558204.hpc-head-n1.unitn.it
+558205.hpc-head-n1.unitn.it
+558206.hpc-head-n1.unitn.it
+558207.hpc-head-n1.unitn.it
+558208.hpc-head-n1.unitn.it
+558210.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=2, PROCESS_NUM=16, OMP_NUM_THREADS=4
+558211.hpc-head-n1.unitn.it
+558213.hpc-head-n1.unitn.it
+558214.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=256, NODES=1, CPUS=8, PROCESS_NUM=1, OMP_NUM_THREADS=1
+558216.hpc-head-n1.unitn.it
+558217.hpc-head-n1.unitn.it
+558218.hpc-head-n1.unitn.it
+558219.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=2, PROCESS_NUM=4, OMP_NUM_THREADS=1
+558220.hpc-head-n1.unitn.it
+558221.hpc-head-n1.unitn.it
+558222.hpc-head-n1.unitn.it
+558223.hpc-head-n1.unitn.it
+558227.hpc-head-n1.unitn.it
+558226.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=256, NODES=1, CPUS=8, PROCESS_NUM=1, OMP_NUM_THREADS=2
+558228.hpc-head-n1.unitn.it
+558229.hpc-head-n1.unitn.it
+558230.hpc-head-n1.unitn.it
+580987.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=2, PROCESS_NUM=16, OMP_NUM_THREADS=8
+580989.hpc-head-n1.unitn.it
+580990.hpc-head-n1.unitn.it
+580991.hpc-head-n1.unitn.it
+580992.hpc-head-n1.unitn.it
+580994.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=4, PROCESS_NUM=1, OMP_NUM_THREADS=1
+580995.hpc-head-n1.unitn.it
+580996.hpc-head-n1.unitn.it
+580997.hpc-head-n1.unitn.it
+580998.hpc-head-n1.unitn.it
+581002.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=4, PROCESS_NUM=1, OMP_NUM_THREADS=2
+581003.hpc-head-n1.unitn.it
+581004.hpc-head-n1.unitn.it
+581005.hpc-head-n1.unitn.it
+581006.hpc-head-n1.unitn.it
+581007.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=4, PROCESS_NUM=1, OMP_NUM_THREADS=4
+581008.hpc-head-n1.unitn.it
+581009.hpc-head-n1.unitn.it
+581010.hpc-head-n1.unitn.it
+581011.hpc-head-n1.unitn.it
+581013.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=4, PROCESS_NUM=1, OMP_NUM_THREADS=8
+581014.hpc-head-n1.unitn.it
+581015.hpc-head-n1.unitn.it
+581016.hpc-head-n1.unitn.it
+581017.hpc-head-n1.unitn.it
+581019.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=4, PROCESS_NUM=4, OMP_NUM_THREADS=1
+581020.hpc-head-n1.unitn.it
+581021.hpc-head-n1.unitn.it
+581022.hpc-head-n1.unitn.it
+581023.hpc-head-n1.unitn.it
+581026.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=4, PROCESS_NUM=4, OMP_NUM_THREADS=2
+581027.hpc-head-n1.unitn.it
+581028.hpc-head-n1.unitn.it
+581029.hpc-head-n1.unitn.it
+581030.hpc-head-n1.unitn.it
+581037.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=4, PROCESS_NUM=4, OMP_NUM_THREADS=4
+581038.hpc-head-n1.unitn.it
+581039.hpc-head-n1.unitn.it
+581040.hpc-head-n1.unitn.it
+581041.hpc-head-n1.unitn.it
+581043.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=4, PROCESS_NUM=4, OMP_NUM_THREADS=8
+581044.hpc-head-n1.unitn.it
+581045.hpc-head-n1.unitn.it
+581046.hpc-head-n1.unitn.it
+581047.hpc-head-n1.unitn.it
+581048.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=4, PROCESS_NUM=16, OMP_NUM_THREADS=1
+581049.hpc-head-n1.unitn.it
+581050.hpc-head-n1.unitn.it
+581051.hpc-head-n1.unitn.it
+581052.hpc-head-n1.unitn.it
+581053.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=4, PROCESS_NUM=16, OMP_NUM_THREADS=2
+581054.hpc-head-n1.unitn.it
+581055.hpc-head-n1.unitn.it
+581056.hpc-head-n1.unitn.it
+581057.hpc-head-n1.unitn.it
+581059.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=4, PROCESS_NUM=16, OMP_NUM_THREADS=4
+581060.hpc-head-n1.unitn.it
+581061.hpc-head-n1.unitn.it
+581062.hpc-head-n1.unitn.it
+581063.hpc-head-n1.unitn.it
+581064.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=4, PROCESS_NUM=16, OMP_NUM_THREADS=8
+581065.hpc-head-n1.unitn.it
+581066.hpc-head-n1.unitn.it
+581067.hpc-head-n1.unitn.it
+581068.hpc-head-n1.unitn.it
+581070.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=8, PROCESS_NUM=1, OMP_NUM_THREADS=1
+581071.hpc-head-n1.unitn.it
+581072.hpc-head-n1.unitn.it
+581073.hpc-head-n1.unitn.it
+581074.hpc-head-n1.unitn.it
+581082.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=8, PROCESS_NUM=1, OMP_NUM_THREADS=2
+581083.hpc-head-n1.unitn.it
+581084.hpc-head-n1.unitn.it
+581085.hpc-head-n1.unitn.it
+581086.hpc-head-n1.unitn.it
+581091.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=8, PROCESS_NUM=1, OMP_NUM_THREADS=4
+581092.hpc-head-n1.unitn.it
+581094.hpc-head-n1.unitn.it
+581095.hpc-head-n1.unitn.it
+581096.hpc-head-n1.unitn.it
+581316.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=8, PROCESS_NUM=1, OMP_NUM_THREADS=8
+581317.hpc-head-n1.unitn.it
+581318.hpc-head-n1.unitn.it
+581319.hpc-head-n1.unitn.it
+581320.hpc-head-n1.unitn.it
+581326.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=8, PROCESS_NUM=4, OMP_NUM_THREADS=1
+581327.hpc-head-n1.unitn.it
+581328.hpc-head-n1.unitn.it
+581329.hpc-head-n1.unitn.it
+581330.hpc-head-n1.unitn.it
+581352.hpc-head-n1.unitn.it
+PARALLEL, DIMENSION=1024, NODES=2, CPUS=8, PROCESS_NUM=4, OMP_NUM_THREADS=2
+581353.hpc-head-n1.unitn.it
+581354.hpc-head-n1.unitn.it
+581355.hpc-head-n1.unitn.it
+581356.hpc-head-n1.unitn.it
