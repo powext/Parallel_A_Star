@@ -63,7 +63,7 @@ typedef struct MsgChunkStart {
     Coordinates starting_point;
     Coordinates ending_point;
     int num_exit_points;
-    Coordinates exit_points[];
+    Coordinates* exit_points;
 } MsgChunkStart;
 
 

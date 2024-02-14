@@ -188,7 +188,6 @@ ChunkPath* compute_path(
 
     // debug Coordinates start and end
     printf_debug("Start: (%d, %d)\n", start.x, start.y);
-    exit(1);
 
     // Enqueue the starting node
     starting_node->distance = 0.0;
