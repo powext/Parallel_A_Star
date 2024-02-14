@@ -57,3 +57,7 @@ output/
 
 # Logs
 *.log
+
+#IDEs
+.idea
+CMakeCache.txt

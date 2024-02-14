@@ -7,9 +7,6 @@
 
 #include <stdbool.h>
 #include "comm.h"
-#include <malloc.h>
-#include <stddef.h>
-#include <stdio.h>
 
 PriorityQueue* createPriorityQueue(int initial_capacity);
 void enqueue(PriorityQueue* pq, Node* node, double priority);

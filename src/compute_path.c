@@ -186,6 +186,10 @@ ChunkPath* compute_path(
         parentMatrix[i] = (Node**)calloc( width, sizeof(Node*));
     }
 
+    // debug Coordinates start and end
+    printf_debug("Start: (%d, %d)\n", start.x, start.y);
+    exit(1);
+
     // Enqueue the starting node
     starting_node->distance = 0.0;
     starting_node->heuristic = compute_heuristic(starting_node, ending_node);
