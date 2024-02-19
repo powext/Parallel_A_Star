@@ -2,11 +2,12 @@
 #include <string.h>
 #include <stdlib.h>
 #include <sys/stat.h>
-#include <unistd.h>
 #include <limits.h>
 #include "../include/json_output.h"
 #include "../include/cJSON.h"
 #include "../include/utility.h"
+
+extern int N_EXIT_POINTS_PER_CHUNK;
 
 void writeOutputToFile(cJSON *json_object) {
     struct stat st = {0};

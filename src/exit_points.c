@@ -2,6 +2,7 @@
 #include "../include/utility.h"
 
 extern bool DEBUG;
+extern int N_EXIT_POINTS_PER_CHUNK;
 
 int find_chunk_corners_exit_points(int rank, Node *nodes, int size, int chunk_side_length, Coordinates initial, Coordinates *exit_points) {
     enum Direction {

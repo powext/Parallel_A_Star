@@ -12,6 +12,7 @@
 #include "../include/json_output.h"
 
 bool DEBUG = false;
+int N_EXIT_POINTS_PER_CHUNK = 12;
 
 void initialize_nodes_from_file(char* file, int size, Node* nodes, Node** starting_node, Node** destination_node) {
     FILE* fp = fopen(file, "r");
@@ -120,6 +121,23 @@ int look_for_size(char** argv, int argc) {
     return 0;
 }
 
+int look_for_n_exitpoints(char** argv, int argc) {
+    for (int i = 1; i < argc; i++) { // Start from 1 to skip the program name (argv[0])
+        // Check if the argument is a named parameter (starts with '-')
+        if (argv[i][0] == '-') {
+            // Compare the argument with various named parameters
+            if (strcmp(argv[i], "-exitpoints") == 0) {
+                // The next argument (i + 1) is the value for the "-size" parameter
+                if (i + 1 < argc) {
+                    return (int) strtol(argv[i + 1], NULL, 10); // Skip the value argument
+                }
+            }
+        }
+    }
+
+    return N_EXIT_POINTS_PER_CHUNK;
+}
+
 int find_maze_size(char* filename){
     // Open the file
     FILE *file = fopen(filename, "r");
@@ -220,6 +238,10 @@ int main(int argc, char** argv) {
 
         parallel_init(n_chunks, world_rank);
         printf_debug("Algorithm running in parallel configuration\n");
+
+        N_EXIT_POINTS_PER_CHUNK = look_for_n_exitpoints(argv, argc);
+        printf_debug("N_EXIT_POINTS_PER_CHUNK: %d\n", N_EXIT_POINTS_PER_CHUNK);
+
         if (*world_rank == 0) {
             // file parameter imports data from the data/ directory
             step_time_start = clock();
